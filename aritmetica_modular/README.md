@@ -15,4 +15,6 @@ Para resolver este ejercicio, he hecho dos funciones en _Haskell_:
 
 _Usando el ejercicio anterior, escribe una función que calcule ![equation](http://mathurl.com/hhcnwnr.png) para cualesquiera ![equation](http://mathurl.com/jku6bzf.png) que sean primos relativos._
 
-Para resolver este ejercicio, he calculado el ![equation](http://mathurl.com/26qs3uq.png) tal que ![equation](http://mathurl.com/gtyjyot.png). Una vez he obtenido ese valor, he calculado su valor modulo ![equation](http://mathurl.com/25js5ug.png).
+Para resolver este ejercicio, he calculado el ![equation](http://mathurl.com/26qs3uq.png) tal que ![equation](http://mathurl.com/gtyjyot.png). Esto es posible debido a que ![equation](http://mathurl.com/25elof5.png) y ![equation](http://mathurl.com/25js5ug.png) son primos relativos y su máximo común divisor es 1. Si no se da este caso, el programa devuelve un -1.
+
+Una vez he obtenido ese valor, he calculado su valor modulo ![equation](http://mathurl.com/25js5ug.png). 

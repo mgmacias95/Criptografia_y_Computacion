@@ -26,6 +26,8 @@ Usando el ejercicio anterior, escribe una función que calcule a^-1 mod b para c
 sean primos relativos.
 -}
 inverse :: Int -> Int -> Int
-inverse a b = i `mod` b
-    where
-        (_,i,_) = extended_euclides a b
+inverse a b
+    | r == 1 = i `mod` b
+    | otherwise = -1
+        where
+            (r,i,_) = extended_euclides a b
