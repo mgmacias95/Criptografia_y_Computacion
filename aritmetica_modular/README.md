@@ -18,3 +18,14 @@ _Usando el ejercicio anterior, escribe una función que calcule ![equation](http
 Para resolver este ejercicio, he calculado el ![equation](http://mathurl.com/26qs3uq.png) tal que ![equation](http://mathurl.com/gtyjyot.png). Esto es posible debido a que ![equation](http://mathurl.com/25elof5.png) y ![equation](http://mathurl.com/25js5ug.png) son primos relativos y su máximo común divisor es 1. Si no se da este caso, el programa devuelve un -1.
 
 Una vez he obtenido ese valor, he calculado su valor modulo ![equation](http://mathurl.com/25js5ug.png). 
+
+
+## Ejercicio 3
+
+_Escribe una función que calcule ![equation](http://mathurl.com/hyy3kpk.png) para cualesquiera ![equation](http://mathurl.com/25elof5.png), ![equation](http://mathurl.com/25js5ug.png) y ![equation](http://mathurl.com/2wdwb4o.png) enteros positivos. La implementación debería tener en cuenta la representación binaria de ![equation](http://mathurl.com/25js5ug.png)._
+
+Para hacer este ejercicio, podríamos primero realizar la potencia ![equation](http://mathurl.com/27tvygk) y después, calcular el módulo ![equation](http://mathurl.com/2wdwb4o.png) del resultado. Ahora bien, para ![equation](http://mathurl.com/27tvygk) muy grandes, esta aproximación es más que costosa.
+
+Es por eso que debe considerarse la representación binaria de ![equation](http://mathurl.com/hu5ay9f.png). 
+
+![equation](http://mathurl.com/hv5tqnk.png)
