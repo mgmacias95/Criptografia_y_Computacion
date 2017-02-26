@@ -31,3 +31,9 @@ Es por eso que debe considerarse la representación binaria de ![equation](http:
 ![equation](http://mathurl.com/znlr2gc.png)
 
 El algoritmo da tantos pasos como dígitos tenga la representación binaria de ![equation](http://mathurl.com/25js5ug.png) pero la complejidad de los cálculos está limitada por ![equation](http://mathurl.com/2wdwb4o.png) y no perderemos tiempo haciendo una potencia muy grande para después aplicarle un módulo.
+
+He hecho dos funciones _Haskell_ para este ejercicio:
+
+* `exponential_zn`: que recibe como parámetros tres valores ![equation](http://mathurl.com/25elof5.png), ![equation](http://mathurl.com/25js5ug.png) y ![equation](http://mathurl.com/2wdwb4o.png) y comprueba los casos base (que ![equation](http://mathurl.com/zoohk97.png) o que ![equation](http://mathurl.com/gven6k9.png)).
+
+* `exponential_zn_aux`: que realiza el cálculo de la potencia usando la representación binaria de ![equation](http://mathurl.com/25js5ug.png). Es importante destacar que no calculo la representación binaria de ![equation](http://mathurl.com/25js5ug.png) sino que voy calculando en cada paso el ![equation](http://mathurl.com/39x8zcn.png) correspondiente.
