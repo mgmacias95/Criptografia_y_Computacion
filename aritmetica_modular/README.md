@@ -24,8 +24,10 @@ Una vez he obtenido ese valor, he calculado su valor modulo ![equation](http://m
 
 _Escribe una función que calcule ![equation](http://mathurl.com/hyy3kpk.png) para cualesquiera ![equation](http://mathurl.com/25elof5.png), ![equation](http://mathurl.com/25js5ug.png) y ![equation](http://mathurl.com/2wdwb4o.png) enteros positivos. La implementación debería tener en cuenta la representación binaria de ![equation](http://mathurl.com/25js5ug.png)._
 
-Para hacer este ejercicio, podríamos primero realizar la potencia ![equation](http://mathurl.com/27tvygk) y después, calcular el módulo ![equation](http://mathurl.com/2wdwb4o.png) del resultado. Ahora bien, para ![equation](http://mathurl.com/27tvygk) muy grandes, esta aproximación es más que costosa.
+Para hacer este ejercicio, podríamos primero realizar la potencia ![equation](http://mathurl.com/27tvygk.png) y después, calcular el módulo ![equation](http://mathurl.com/2wdwb4o.png) del resultado. Ahora bien, para ![equation](http://mathurl.com/27tvygk.png) muy grandes, esta aproximación es más que costosa.
 
-Es por eso que debe considerarse la representación binaria de ![equation](http://mathurl.com/hu5ay9f.png). 
+Es por eso que debe considerarse la representación binaria de ![equation](http://mathurl.com/zbqqxv7.png). Usando dicha representación binaria, ![equation](http://mathurl.com/27tvygk.png) puede calcularse como:
 
-![equation](http://mathurl.com/hv5tqnk.png)
+![equation](http://mathurl.com/znlr2gc.png)
+
+El algoritmo da tantos pasos como dígitos tenga la representación binaria de ![equation](http://mathurl.com/25js5ug.png) pero la complejidad de los cálculos está limitada por ![equation](http://mathurl.com/2wdwb4o.png) y no perderemos tiempo haciendo una potencia muy grande para después aplicarle un módulo.
