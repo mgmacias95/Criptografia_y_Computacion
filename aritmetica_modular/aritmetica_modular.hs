@@ -1,3 +1,5 @@
+import System.Random -- instalar con cabal install random
+
 {-
 Ejercicio 1
 
@@ -56,3 +58,33 @@ exponential_zn_aux a k n b ki
                     k0  = k `div` 2
                     ki0 = k0 `mod` 2
                     b0  = a*b `mod` n
+
+{-
+Ejercicio 4
+
+Dado un entero p, escribe una función para determinar si p es (problablemente) primo
+usando el método de Miller-Rabin
+-}
+
+-- Descompone un número p en 2^u * s
+descomposicion_2us :: Int -> Int -> (Int, Int)
+descomposicion_2us p t 
+    | m == 0    = descomposicion_2us u s
+    | otherwise = (t, p)
+                where
+                    u = p `div` 2
+                    s = t + 1
+                    m = p `mod` 2
+
+-- comprueba que p >= 5
+miller_rabin :: Int -> Bool
+miller_rabin p
+    | p < 5     = error "Imposible aplicar test para p < 5"
+    | otherwise = miller_rabin_ok p u s
+            where
+                (u,s) = descomposicion_2us p 0
+
+
+-- realiza el test de miller rabin
+miller_rabin_ok :: Int -> Int -> Int -> Bool
+-- generar un aleatorio con randomRIO (1,10)
