@@ -1,4 +1,5 @@
 import System.Random -- instalar con cabal install random
+import System.IO.Unsafe
 
 {-
 Ejercicio 1
@@ -76,15 +77,26 @@ descomposicion_2us p t
                     s = t + 1
                     m = p `mod` 2
 
+-- get_random_int :: (Int, Int) -> IO Int
+-- get_random_int (min, max) = do
+--     g <- newStdGen
+--     let (n,_) = randomR (min, max) g :: (Int, StdGen)
+--     return n
+    
+
 -- comprueba que p >= 5
 miller_rabin :: Int -> Bool
 miller_rabin p
     | p < 5     = error "Imposible aplicar test para p < 5"
-    | otherwise = miller_rabin_ok p u s
+    | otherwise = miller_rabin_ok p u s a
             where
                 (u,s) = descomposicion_2us p 0
-
+                a     = unsafePerformIO (randomRIO (2, p-2))
 
 -- realiza el test de miller rabin
-miller_rabin_ok :: Int -> Int -> Int -> Bool
--- generar un aleatorio con randomRIO (1,10)
+miller_rabin_ok :: Int -> Int -> Int -> Int -> Bool
+miller_rabin_ok p u s a
+        | b == 1 || b == p-1 = True
+        | otherwise          = False
+                where
+                    b = exponential_zn a s p
