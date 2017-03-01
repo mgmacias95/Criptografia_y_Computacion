@@ -84,7 +84,7 @@ miller_rabin p
     | p < 5     = error "Imposible aplicar test para p < 5"
     | otherwise = miller_rabin_ok p u s a
             where
-                (u,s) = descomposicion_2us p 0
+                (u,s) = descomposicion_2us (p-1) 0
                 a     = unsafePerformIO (randomRIO (2, p-2))
 
 -- realiza el test de miller rabin
@@ -94,4 +94,4 @@ miller_rabin_ok p u s a
         | otherwise          = l
                 where
                     b = exponential_zn a s p
-                    l = zipWith (\x y -> exponential_zn x y p) (take u (repeat a)) [2,4..u]
+                    l = zipWith (\x y -> exponential_zn x y p) (take u (repeat (a^s))) (map (2^) [1..u])
