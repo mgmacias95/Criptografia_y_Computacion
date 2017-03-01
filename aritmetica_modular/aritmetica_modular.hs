@@ -79,7 +79,7 @@ descomposicion_2us p t
     
 
 -- -- comprueba que p >= 5
-miller_rabin :: Int -> [Int]
+miller_rabin :: Int -> Bool
 miller_rabin p
     | p < 5     = error "Imposible aplicar test para p < 5"
     | otherwise = miller_rabin_ok p u s a
@@ -88,10 +88,12 @@ miller_rabin p
                 a     = unsafePerformIO (randomRIO (2, p-2))
 
 -- realiza el test de miller rabin
-miller_rabin_ok :: Int -> Int -> Int -> Int -> [Int]
+miller_rabin_ok :: Int -> Int -> Int -> Int -> Bool
 miller_rabin_ok p u s a
-        | b == 1 || b == p-1 = [1]
-        | otherwise          = l
+        | b == 1 || b == p-1 = True
+        | p-1 `elem` l       = True
+        | 1 `elem` l         = False
+        | otherwise          = False
                 where
                     b = exponential_zn a s p
                     l = zipWith (\x y -> exponential_zn x y p) (take u (repeat (a^s))) (map (2^) [1..u])
