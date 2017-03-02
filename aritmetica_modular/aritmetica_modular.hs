@@ -114,7 +114,7 @@ shanks a c p = tabT
     where
         s    = ceiling (sqrt (fromIntegral p))
         l1   = (take s (repeat a))
-        pa   = zipWith (\x y -> exponential_zn x (fromIntegral y) p) l1 [0..s]
+        pa   = zipWith (\x y -> exponential_zn x y p) l1 [0..(fromIntegral s)]
         tabS = zipWith (\x y -> x * y `mod` p) pa (take s (repeat c))
         as   = exponential_zn a (fromIntegral s) p
         tabT = zipWith (\x y -> x * y `mod` p) pa (take s (repeat as)) 
