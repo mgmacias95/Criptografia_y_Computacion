@@ -37,3 +37,15 @@ He hecho dos funciones _Haskell_ para este ejercicio:
 * `exponential_zn`: que recibe como parámetros tres valores ![equation](http://mathurl.com/25elof5.png), ![equation](http://mathurl.com/25js5ug.png) y ![equation](http://mathurl.com/2wdwb4o.png) y comprueba los casos base (que ![equation](http://mathurl.com/zoohk97.png) o que ![equation](http://mathurl.com/gven6k9.png)).
 
 * `exponential_zn_aux`: que realiza el cálculo de la potencia usando la representación binaria de ![equation](http://mathurl.com/25js5ug.png). Es importante destacar que no calculo la representación binaria de ![equation](http://mathurl.com/25js5ug.png) sino que voy calculando en cada paso el ![equation](http://mathurl.com/39x8zcn.png) correspondiente.
+
+## Ejercicio 4
+
+_Dado un entero ![equation](http://mathurl.com/3xbx475.png), escribe una función para determinar si ![equation](http://mathurl.com/3xbx475.png) es (problablemente) primo usando el método de **Miller-Rabin**._
+
+El método de __Miller-Rabin__ tiene los siguientes pasos:
+
+1. En primer lugar, debemos descomponer ![equation](http://mathurl.com/h85ahjb.png). Para ello, dividimos ![equation](http://mathurl.com/hm7h2e8.png) entre 2 hasta obtener resto 1. ![equation](http://mathurl.com/26qs3uq.png) es el número de divisiones que hemos hecho hasta obtener una con resto 1 (sin contar esta última) y ![equation](http://mathurl.com/yemlmqa.png) es el cociente de la última división con resto 0 que hemos hecho y debe ser __impar__.
+
+2. Tomamos un ![equation](http://mathurl.com/25elof5.png) aleatorio tal que ![equation](http://mathurl.com/hm7zezn.png).
+
+3. Calculamos el valor de ![equation](http://mathurl.com/jrraqse.png). Si es igual a 1 o  
