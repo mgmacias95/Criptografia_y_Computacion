@@ -1,5 +1,6 @@
 import System.Random -- instalar con cabal install random
 import System.IO.Unsafe
+import Data.List 
 
 {-
 Ejercicio 1
@@ -110,7 +111,7 @@ Implementa el algoritmo paso enano-paso gigante para el cálculo de logaritmos
 discretos en Zp.
 -}
 shanks :: Integral a => a -> a -> a -> [a]
-shanks a c p = tabT
+shanks a c p = intersect tabS tabT
     where
         s    = ceiling (sqrt (fromIntegral p))
         l1   = (take s (repeat a))
@@ -118,3 +119,5 @@ shanks a c p = tabT
         tabS = zipWith (\x y -> x * y `mod` p) pa (take s (repeat c))
         as   = exponential_zn a (fromIntegral s) p
         tabT = zipWith (\x y -> exponential_zn x y p) (take s (repeat as)) [1..(fromIntegral s)]
+        i    = intersect tabS tabT
+        
