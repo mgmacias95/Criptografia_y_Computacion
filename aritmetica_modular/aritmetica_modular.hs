@@ -117,4 +117,4 @@ shanks a c p = tabT
         pa   = zipWith (\x y -> exponential_zn x y p) l1 [0..(fromIntegral s)]
         tabS = zipWith (\x y -> x * y `mod` p) pa (take s (repeat c))
         as   = exponential_zn a (fromIntegral s) p
-        tabT = zipWith (\x y -> x * y `mod` p) pa (take s (repeat as)) 
+        tabT = zipWith (\x y -> exponential_zn x y p) (take s (repeat as)) [1..(fromIntegral s)]
