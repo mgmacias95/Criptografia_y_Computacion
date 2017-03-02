@@ -110,9 +110,11 @@ Implementa el algoritmo paso enano-paso gigante para el cálculo de logaritmos
 discretos en Zp.
 -}
 shanks :: Integer -> Integer -> Integer -> [Integer]
-shanks a c p = tabS
+shanks a c p = tabT
     where
         s    = ceiling (sqrt (fromIntegral p))
         l1   = (take s (repeat a))
-        as   = zipWith (\x y -> exponential_zn x (fromIntegral y) p) l1 [0..s]
-        tabS = zipWith (\x y -> x * y `mod` p) as (take s (repeat c))
+        pa   = zipWith (\x y -> exponential_zn x (fromIntegral y) p) l1 [0..s]
+        tabS = zipWith (\x y -> x * y `mod` p) pa (take s (repeat c))
+        as   = exponential_zn a (fromIntegral s) p
+        tabT = zipWith (\x y -> x * y `mod` p) pa (take s (repeat as)) 
