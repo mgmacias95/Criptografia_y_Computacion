@@ -8,12 +8,12 @@ Implementa el algoritmo extendido de Euclides para el cálculo del máximo comú
 dados dos enteros'a y b, encuentra u, v \in Z tales que au + bv es el máximo común divisor 
 de a y b
 -}
-extended_euclides :: Int -> Int -> (Int, Int, Int)
+extended_euclides :: Integer -> Integer -> (Integer, Integer, Integer)
 extended_euclides a 0 = (a, 1, 0)
 extended_euclides a b = extended_euclides_tabla a b 1 0 0 1
 
 -- Función auxiliar para el algoritmo extendido de euclides
-extended_euclides_tabla :: Int -> Int -> Int -> Int -> Int -> Int -> (Int, Int, Int)
+extended_euclides_tabla :: Integer -> Integer -> Integer -> Integer -> Integer -> Integer -> (Integer, Integer, Integer)
 extended_euclides_tabla a 0 x2 _ y2 _ = (a, x2, y2)
 extended_euclides_tabla a b x2 x1 y2 y1 = extended_euclides_tabla b r x1 x y1 y
             where
@@ -29,7 +29,7 @@ Ejercicio 2
 Usando el ejercicio anterior, escribe una función que calcule a^-1 mod b para cualesquiera 
 a,b \in Z que sean primos relativos.
 -}
-inverse :: Int -> Int -> Int
+inverse :: Integer -> Integer -> Integer
 inverse a b
     | r == 1 = i `mod` b
     | otherwise = -1
@@ -42,14 +42,14 @@ Ejercicio 3
 Escribe una función que calcule a^b mod n para cualquiera a, b y n enteros positivos. 
 La implementación debería tener en cuenta la representación binaria de b.
 -}
-exponential_zn :: Int -> Int -> Int -> Int
+exponential_zn :: Integer -> Integer -> Integer -> Integer
 exponential_zn _ 0 _ = 1
 exponential_zn a 1 _ = a
 exponential_zn a k n = exponential_zn_aux a k n 1 ki
                 where
                     ki = k `mod` 2
 
-exponential_zn_aux :: Int -> Int -> Int -> Int -> Int -> Int
+exponential_zn_aux :: Integer -> Integer -> Integer -> Integer -> Integer -> Integer
 exponential_zn_aux a 1 n b _ = a*b `mod` n
 exponential_zn_aux a k n b ki
     | ki == 0   = exponential_zn_aux a0 k0 n b ki0
@@ -68,7 +68,7 @@ usando el método de Miller-Rabin
 -}
 
 -- Descompone un número p en 2^u * s
-descomposicion_2us :: Int -> Int -> (Int, Int)
+descomposicion_2us :: Integer -> Integer -> (Integer, Integer)
 descomposicion_2us p t 
     | m == 0    = descomposicion_2us u s
     | otherwise = (t, p)
@@ -78,22 +78,25 @@ descomposicion_2us p t
                     m = p `mod` 2
     
 
--- -- comprueba que p >= 5
-miller_rabin :: Int -> Bool
-miller_rabin p
-    | p < 5     = error "Imposible aplicar test para p < 5"
-    | otherwise = miller_rabin_ok p u s a
+-- realiza el test de miller rabin 10 veces (por definir)
+
+-- comprueba que p >= 5
+miller_rabin_once :: Integer -> Bool
+miller_rabin_once p
+    | p < 5                = error "Imposible aplicar test para p < 5"
+    | b == 1 || b == (p-1) = True
+    | otherwise            = miller_rabin_ok p u b 0 0
             where
                 (u,s) = descomposicion_2us (p-1) 0
                 a     = unsafePerformIO (randomRIO (2, p-2))
+                b     = exponential_zn a s p
 
 -- realiza el test de miller rabin
-miller_rabin_ok :: Int -> Int -> Int -> Int -> Bool
-miller_rabin_ok p u s a
-        | b == 1 || b == p-1 = True
-        | p-1 `elem` l       = True
-        | 1 `elem` l         = False
-        | otherwise          = False
-                where
-                    b = exponential_zn a s p
-                    l = zipWith (\x y -> exponential_zn x y p) (take u (repeat (a^s))) (map (2^) [1..u])
+miller_rabin_ok :: Integer -> Integer -> Integer -> Integer -> Integer -> Bool
+miller_rabin_ok p u a i b
+    | a == 1 && b == (p-1) = True
+    | a == 1 && b /= (p-1) = False
+    | i >= u               = False
+    | otherwise            = miller_rabin_ok p u c (i+1) a
+        where
+            c = exponential_zn a 2 p
