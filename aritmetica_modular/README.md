@@ -48,9 +48,9 @@ El método de __Miller-Rabin__ tiene los siguientes pasos:
 
 2. Tomamos un ![equation](http://mathurl.com/25elof5.png) aleatorio tal que ![equation](http://mathurl.com/hm7zezn.png). En este paso, rompo la _transparencia referencial_ de Haskell, ya que cada vez que ejecuto la función se obtiene un ![equation](http://mathurl.com/25elof5.png) distinto:
 
-```haskell
-a = unsafePerformIO (randomRIO (2, p-2))
-```
+    ```haskell
+    a = unsafePerformIO (randomRIO (2, p-2))
+    ```
 
 3. Calculamos el valor de ![equation](http://mathurl.com/jrraqse.png). Si es igual a 1 o a ![equation](http://mathurl.com/hm7h2e8.png), ![equation](http://mathurl.com/3xbx475.png) será probablemente primo.
 
