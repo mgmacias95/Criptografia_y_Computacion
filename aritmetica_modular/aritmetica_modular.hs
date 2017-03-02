@@ -63,8 +63,8 @@ exponential_zn_aux a k n b ki
 {-
 Ejercicio 4
 
-Dado un entero p, escribe una función para determinar si p es (problablemente) primo
-usando el método de Miller-Rabin
+Dado un entero p, escribe una función para determinar si p es (problablemente) 
+primo usando el método de Miller-Rabin
 -}
 
 -- Descompone un número p en 2^u * s
@@ -102,3 +102,17 @@ miller_rabin_ok p u a i b
     | otherwise            = miller_rabin_ok p u c (i+1) a
         where
             c = exponential_zn a 2 p
+
+{-
+Ejercicio 5
+
+Implementa el algoritmo paso enano-paso gigante para el cálculo de logaritmos
+discretos en Zp.
+-}
+shanks :: Integer -> Integer -> Integer -> [Integer]
+shanks a c p = tabS
+    where
+        s    = ceiling (sqrt (fromIntegral p))
+        l1   = (take s (repeat a))
+        as   = zipWith (\x y -> exponential_zn x (fromIntegral y) p) l1 [0..s]
+        tabS = zipWith (\x y -> x * y `mod` p) as (take s (repeat c))
