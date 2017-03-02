@@ -78,7 +78,9 @@ descomposicion_2us p t
                     m = p `mod` 2
     
 
--- realiza el test de miller rabin 10 veces (por definir)
+-- realiza el test de miller rabin 10 veces
+miller_rabin :: Integer -> Bool
+miller_rabin p = foldl1 (&&) (map miller_rabin_once (take 10 (repeat p))) 
 
 -- comprueba que p >= 5
 miller_rabin_once :: Integer -> Bool
