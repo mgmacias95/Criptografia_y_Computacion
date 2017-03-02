@@ -44,8 +44,18 @@ _Dado un entero ![equation](http://mathurl.com/3xbx475.png), escribe una funció
 
 El método de __Miller-Rabin__ tiene los siguientes pasos:
 
-1. En primer lugar, debemos descomponer ![equation](http://mathurl.com/h85ahjb.png). Para ello, dividimos ![equation](http://mathurl.com/hm7h2e8.png) entre 2 hasta obtener resto 1. ![equation](http://mathurl.com/26qs3uq.png) es el número de divisiones que hemos hecho hasta obtener una con resto 1 (sin contar esta última) y ![equation](http://mathurl.com/yemlmqa.png) es el cociente de la última división con resto 0 que hemos hecho y debe ser __impar__.
+1. En primer lugar, debemos descomponer ![equation](http://mathurl.com/h85ahjb.png). Para ello, dividimos ![equation](http://mathurl.com/hm7h2e8.png) entre 2 hasta obtener resto 1. ![equation](http://mathurl.com/26qs3uq.png) es el número de divisiones que hemos hecho hasta obtener una con resto 1 (sin contar esta última) y ![equation](http://mathurl.com/yemlmqa.png) es el cociente de la última división con resto 0 que hemos hecho y debe ser __impar__. Este paso se realiza en la función `descomposicion_2us`.
 
-2. Tomamos un ![equation](http://mathurl.com/25elof5.png) aleatorio tal que ![equation](http://mathurl.com/hm7zezn.png).
+2. Tomamos un ![equation](http://mathurl.com/25elof5.png) aleatorio tal que ![equation](http://mathurl.com/hm7zezn.png). En este paso, rompo la _transparencia referencial_ de Haskell, ya que cada vez que ejecuto la función se obtiene un ![equation](http://mathurl.com/25elof5.png) distinto:
 
-3. Calculamos el valor de ![equation](http://mathurl.com/jrraqse.png). Si es igual a 1 o  
+```haskell
+a = unsafePerformIO (randomRIO (2, p-2))
+```
+
+3. Calculamos el valor de ![equation](http://mathurl.com/jrraqse.png). Si es igual a 1 o a ![equation](http://mathurl.com/hm7h2e8.png), ![equation](http://mathurl.com/3xbx475.png) será probablemente primo.
+
+4. Si no ha sido así, iteramos desde 1 hasta ![equation](http://mathurl.com/yemlmqa.png) elevando en cada paso ![equation](http://mathurl.com/jrraqse.png) al cuadrado. Si en algún paso obtenemos un 1, debemos comprobar que en el paso anterior obtuvimos un ![equation](http://mathurl.com/hm7h2e8.png). Si esto se cumple, ![equation](http://mathurl.com/3xbx475.png) será probablemente primo y si no, no será primo.
+
+Todas las operaciones deben hacerse módulo ![equation](http://mathurl.com/3xbx475.png). Además, al ser un test probabilístico, debe realizarse un mínimo de veces para asegurar una baja probabilidad de error. En nuestro caso, al hacerlo 10 veces, la probabilidad de error es:
+
+![equation](http://mathurl.com/jaxtzlm.png)
