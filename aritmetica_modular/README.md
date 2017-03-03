@@ -59,3 +59,26 @@ El método de __Miller-Rabin__ tiene los siguientes pasos:
 Todas las operaciones deben hacerse módulo ![equation](http://mathurl.com/3xbx475.png). Además, al ser un test probabilístico, debe realizarse un mínimo de veces para asegurar una baja probabilidad de error. En nuestro caso, al hacerlo 10 veces, la probabilidad de error es:
 
 ![equation](http://mathurl.com/jaxtzlm.png)
+
+## Ejercicio 5
+
+_Implementa el algoritmo **paso enano-paso gigante** para el cálculo de logaritmos
+discretos en ![equation](http://mathurl.com/oj9rb3c.png)._
+
+Este algoritmo se basa en el cálculo de dos listas, el _paso gigante_ y el _paso enano_, y encontrar coincidencias entre ellas:
+
+![equation](http://mathurl.com/hlpb3zo.png)
+
+Para hacer estas listas he usado la función `zipWith` de Haskell, para poder multiplicar dos listas entre sí:
+
+```haskell
+l1   = replicate (fromIntegral s) a
+pa   = zipWith (\x y -> exponential_zn x y p) l1 [0..(fromIntegral s)]
+tabS = zipWith (\x y -> x * y `mod` p) pa (replicate (fromIntegral s) c)
+as   = exponential_zn a (fromIntegral s) p
+asl  = (replicate (fromIntegral s) as)
+tabT = zipWith (\x y -> exponential_zn x y p) asl [1..(fromIntegral s)]
+```
+`tabS` es la tabla del _paso enano_ y `tabT` la tabla del _paso gigante_.
+
+Una vez tengo calculadas ambas listas, paso a buscar coincidencias entre ellas calculando su intersección.
