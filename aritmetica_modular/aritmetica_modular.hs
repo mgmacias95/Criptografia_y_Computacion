@@ -1,6 +1,7 @@
 import System.Random -- instalar con cabal install random
 import System.IO.Unsafe
 import Data.List 
+import Data.Maybe
 
 {-
 Ejercicio 1
@@ -110,14 +111,23 @@ Ejercicio 5
 Implementa el algoritmo paso enano-paso gigante para el cálculo de logaritmos
 discretos en Zp.
 -}
+getIndexTwoLists :: Integral a => a -> [a] -> [a] -> (a,a)
+getIndexTwoLists i t s = (it+1, is)
+            where
+                it = (fromIntegral (fromJust (elemIndex i t)))
+                is = (fromIntegral (fromJust (elemIndex i s)))
+
 shanks :: Integral a => a -> a -> a -> [a]
-shanks a c p = intersect tabS tabT
+shanks a c p = k
     where
-        s    = ceiling (sqrt (fromIntegral p))
-        l1   = (take s (repeat a))
+        s    = ceiling (sqrt (fromIntegral p-1))
+        l1   = replicate (fromIntegral s) a
         pa   = zipWith (\x y -> exponential_zn x y p) l1 [0..(fromIntegral s)]
-        tabS = zipWith (\x y -> x * y `mod` p) pa (take s (repeat c))
+        tabS = zipWith (\x y -> x * y `mod` p) pa (replicate (fromIntegral s) c)
         as   = exponential_zn a (fromIntegral s) p
-        tabT = zipWith (\x y -> exponential_zn x y p) (take s (repeat as)) [1..(fromIntegral s)]
+        asl  = (replicate (fromIntegral s) as)
+        tabT = zipWith (\x y -> exponential_zn x y p) asl [1..(fromIntegral s)]
         i    = intersect tabS tabT
-        
+        indx = map (\x -> getIndexTwoLists x tabT tabS) i
+        k    = map (\x -> (fst x)*s - (snd x)) indx
+  
