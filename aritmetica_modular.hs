@@ -112,22 +112,24 @@ Implementa el algoritmo paso enano-paso gigante para el cálculo de logaritmos
 discretos en Zp.
 -}
 getIndexTwoLists :: Integral a => a -> [a] -> [a] -> (a,a)
-getIndexTwoLists i t s = (it+1, is)
+getIndexTwoLists i t r = (it+1, ir)
             where
                 it = (fromIntegral (fromJust (elemIndex i t)))
-                is = (fromIntegral (fromJust (elemIndex i s)))
+                ir = (fromIntegral (fromJust (elemIndex i r)))
 
 shanks :: Integral a => a -> a -> a -> [a]
-shanks a c p = k
-    where
-        s    = ceiling (sqrt (fromIntegral p-1))
-        l1   = replicate (fromIntegral s) a
-        pa   = zipWith (\x y -> exponential_zn x y p) l1 [0..(fromIntegral s)]
-        tabS = zipWith (\x y -> x * y `mod` p) pa (replicate (fromIntegral s) c)
-        as   = exponential_zn a (fromIntegral s) p
-        asl  = (replicate (fromIntegral s) as)
-        tabT = zipWith (\x y -> exponential_zn x y p) asl [1..(fromIntegral s)]
-        i    = intersect tabS tabT
-        indx = map (\x -> getIndexTwoLists x tabT tabS) i
-        k    = map (\x -> (fst x)*s - (snd x)) indx
-  
+shanks a c p 
+    | not $ miller_rabin p = error "p debe ser primo"
+    | otherwise            = k
+        where
+            s    = ceiling (sqrt (fromIntegral p-1))
+            l1   = replicate (fromIntegral s) a
+            pa   = zipWith (\x y -> exponential_zn x y p) l1 [0..(fromIntegral s)]
+            tabS = zipWith (\x y -> x * y `mod` p) pa (replicate (fromIntegral s) c)
+            as   = exponential_zn a (fromIntegral s) p
+            asl  = (replicate (fromIntegral s) as)
+            tabT = zipWith (\x y -> exponential_zn x y p) asl [1..(fromIntegral s)]
+            i    = intersect tabS tabT
+            indx = map (\x -> getIndexTwoLists x tabT tabS) i
+            k    = map (\x -> (fst x)*s - (snd x)) indx
+      

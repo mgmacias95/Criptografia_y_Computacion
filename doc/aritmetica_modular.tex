@@ -80,7 +80,7 @@ extended_euclides_tabla a b x2 x1 y2 y1 = extended_euclides_tabla b r x1 x y1 y
 \end{enumerate}
 
 \section{\textcolor{rojo}Ejercicio 2}
-\textit{Usando el cálculo del ejercicio anterior, escribe una función que calcule $a^{-1}\; mod \; b$ para cualesquiera $a$ y $b$ que sean primos relativos.}
+\textit{Usando el cálculo del ejercicio anterior, escribe una función que calcule $a^{-1}\bmod b$ para cualesquiera $a$ y $b$ que sean primos relativos.}
 
 Para resolver este ejercicio he calculado el $u$ tal que $au + bv$. Esto es posible debido a que $a$ y $b$ son primos relativos y, por tanto, $mcd(a,b) = 1$. Si no se cumple esta condición, el programa devuelve $-1$.
 
@@ -96,7 +96,7 @@ inverse a b
 \end{minted}
 
 \section{\textcolor{rojo}Ejercicio 3}
-\textit{Escribe una función que calcule $a^b \; mod \; n$ para cualesquiera $a, b \in \mathbb{Z}$ que sean primos relativos. La implementación debería tener en cuenta la representación binaria de $b$.}
+\textit{Escribe una función que calcule $a^b \bmod n$ para cualesquiera $a, b \in \mathbb{Z}$ que sean primos relativos. La implementación debería tener en cuenta la representación binaria de $b$.}
 
 Para hacer este ejercicio, podríamos primero realizar la potencia $a^b$ y después, calcular el módulo $n$ del resultado. Ahora bien, para un $b$ muy grande esta aproximación es muy costosa.
 
@@ -228,9 +228,58 @@ asl  = (replicate (fromIntegral s) as)
 tabT = zipWith (\x y -> exponential_zn x y p) asl [1..(fromIntegral s)]
 \end{minted}
 
-en primer lugar, calculo el valor de $as=a^s \; mod \; p$ y creo una lista repitiendo $s$ veces $as$. Por último, calculo la lista $T$ usando la función $a^b \;mod\;n$ que he desarrollado en el ejercicio anterior.
+en primer lugar, calculo el valor de $as=a^s \bmod p$ y creo una lista repitiendo $s$ veces $as$. Por último, calculo la lista $T$ usando la función $a^b \bmod n$ que he desarrollado en el ejercicio anterior.
 
-Una vez tengo calculadas ambas listas, paso a buscar coincidencias entre ellas calculando su intersección:
+Una vez tengo calculadas ambas listas, paso a buscar coincidencias entre ellas calculando su intersección.
 
+\begin{displaymath}
+T \cap S = \begin{cases}
+\emptyset & \text{No hay solución} \\
+\text{en otro caso} & k
+\end{cases}  
+\end{displaymath}
+
+donde $k$ es el conjunto de todos los elementos que coinciden en ambas tablas.
+
+\begin{minted}[linenos, frame=lines, label={Calculando la intersección de T y S}]{haskell}
+i = intersect tabS tabT
+\end{minted}
+
+Una vez tenemos los elementos que coinciden en ambas tablas, necesitamos encontrar los índices de cada elemento en cada tabla, ya que el $k$ que buscamos se puede expresar como $k = t \cdot s - r$.  Para obtener los índices, $(t,r)$, de cada tabla he desarrollado la siguiente función Haskell:
+
+\begin{minted}[linenos, frame=lines, label={getIndexTwoLists}]{haskell}
+getIndexTwoLists :: Integral a => a -> [a] -> [a] -> (a,a)
+getIndexTwoLists i t r = (it+1, ir)
+            where
+                it = (fromIntegral (fromJust (elemIndex i t)))
+                ir = (fromIntegral (fromJust (elemIndex i r)))
+\end{minted}
+
+Una vez tengo los índices de cada elemento en las dos tablas, calculo para cada elemento $k$ su valor y devuelvo una lista con todos los $k$ encontrados:
+
+\begin{minted}[linenos, frame=lines, label={Computing k}]{haskell}
+indx = map (\x -> getIndexTwoLists x tabT tabS) i
+k    = map (\x -> (fst x)*s - (snd x)) indx
+\end{minted}
+
+Todos estos pasos están reflejados en la función \texttt{shanks} que he desarrollado:
+
+\begin{minted}[linenos, frame=lines, label={shanks}]{haskell}
+shanks :: Integral a => a -> a -> a -> [a]
+shanks a c p 
+    | not $ miller_rabin p = error "p debe ser primo"
+    | otherwise            = k
+        where
+            s    = ceiling (sqrt (fromIntegral p-1))
+            l1   = replicate (fromIntegral s) a
+            pa   = zipWith (\x y -> exponential_zn x y p) l1 [0..(fromIntegral s)]
+            tabS = zipWith (\x y -> x * y `mod` p) pa (replicate (fromIntegral s) c)
+            as   = exponential_zn a (fromIntegral s) p
+            asl  = (replicate (fromIntegral s) as)
+            tabT = zipWith (\x y -> exponential_zn x y p) asl [1..(fromIntegral s)]
+            i    = intersect tabS tabT
+            indx = map (\x -> getIndexTwoLists x tabT tabS) i
+            k    = map (\x -> (fst x)*s - (snd x)) indx
+\end{minted}
 
 \end{document}
