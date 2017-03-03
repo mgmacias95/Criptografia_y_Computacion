@@ -1,0 +1,107 @@
+\documentclass[10pt,spanish]{article}
+
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath, amsthm}
+\usepackage{amsfonts, amssymb, latexsym}
+\usepackage{enumerate}
+\usepackage[usenames, dvipsnames]{color}
+\usepackage{colortbl}
+\usepackage{minted}
+\usepackage[left=3cm, right=3cm]{geometry}
+
+\usepackage[bookmarks=true,
+            bookmarksnumbered=false, % true means bookmarks in
+                                     % left window are numbered
+            bookmarksopen=false,     % true means only level 1
+                                     % are displayed.
+            colorlinks=true,
+            linkcolor=webblue]{hyperref}
+\definecolor{webgreen}{rgb}{0, 0.5, 0} % less intense green
+\definecolor{webblue}{rgb}{0, 0, 0.5}  % less intense blue
+\definecolor{webred}{rgb}{0.5, 0, 0}   % less intense red
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1ex plus 0.5ex minus 0.2ex}
+
+%%%%% Para cambiar el tipo de letra en el título de la sección %%%%%%%%%%%
+\usepackage{sectsty}
+\sectionfont{\fontfamily{pag}\selectfont}
+\subsectionfont{\fontfamily{pag}\selectfont}
+\subsubsectionfont{\fontfamily{pag}\selectfont}
+
+\definecolor{rojo}{rgb}{0.8, 0.0, 0.0}
+\definecolor{azul}{rgb}{0.2, 0.2, 0.6}
+\definecolor{temacuatro}{rgb}{0.0, 0.62, 0.38}
+\definecolor{temacinco}{rgb}{0.93, 0.35, 0.0}
+\definecolor{temaseis}{rgb}{0.6, 0.4, 0.8}
+\definecolor{temasiete}{rgb}{0.0, 0.47, 0.75}
+
+% \usepackage[default]{frcursive}
+% \usepackage[T1]{fontenc}
+
+%Definimos autor y título
+\title{\fontfamily{pag}\selectfont \bfseries \Huge \color{rojo} Aritmética Modular}
+\author{\fontfamily{pag}\selectfont \bfseries \LARGE Marta Gómez}
+
+\begin{document}
+\maketitle
+
+\renewcommand{\tablename}{Tabla}
+
+\section{\textcolor{rojo}Ejercicio 1}
+\textit{Implementa el \textbf{\textcolor{rojo}{Algoritmo extendido de Euclides}} para el cálculo del máximo común divisor: dados dos enteros $a$ y $b$, encuentra $u, v \in \mathbb{Z}$ tales que $au + bv$ sea el máximo común divisor de $a$ y $b$.}
+
+Para resolver este ejercicio, he desarrollado dos funciones en \textit{\textcolor{rojo}{Haskell}}:
+
+\begin{enumerate}[---]
+    \item \texttt{extended\_euclides}: esta función sirve como interfaz para el usuario y comprueba el caso base, que $b=0$. En el caso de que no se de el caso base, se pasa a utilizar la siguiente función.
+
+\begin{minted}[linenos, frame=lines, label={extended\_euclides}]{haskell}
+extended_euclides :: Integral a => a -> a -> (a, a, a)
+extended_euclides a 0 = (a, 1, 0)
+extended_euclides a b = extended_euclides_tabla a b 1 0 0 1
+
+\end{minted}
+
+    \item \texttt{extended\_euclides\_tabla}: esta  función implementa la tabla para el cálculo del algoritmo extendido de Euclides. A diferencia de la anterior, necesita como entrada los valores de $(x2, x1, y2, y1)$ además de $a$ y $b$. 
+
+\begin{minted}[linenos, frame=lines, label={extended\_euclides\_tabla}]{haskell}
+extended_euclides_tabla :: Integral a => a -> a -> a -> a -> a -> a -> (a, a, a)
+extended_euclides_tabla a 0 x2 _ y2 _ = (a, x2, y2)
+extended_euclides_tabla a b x2 x1 y2 y1 = extended_euclides_tabla b r x1 x y1 y
+            where
+                q = a `div` b
+                r = a - q*b
+                x = x2 - q*x1
+                y = y2 - q*y1
+
+\end{minted}
+\end{enumerate}
+
+\section{\textcolor{rojo}Ejercicio 2}
+\textit{Usando el cálculo del ejercicio anterior, escribe una función que calcule $a^{-1}\; mod \; b$ para cualesquiera $a$ y $b$ que sean primos relativos.}
+
+Para resolver este ejercicio he calculado el $u$ tal que $au + bv$. Esto es posible debido a que $a$ y $b$ son primos relativos y, por tanto, $mcd(a,b) = 1$. Si no se cumple esta condición, el programa devuelve $-1$.
+
+Una vez obtenido $u$, he calculado su valor módulo $b$.
+
+\begin{minted}[linenos, frame=lines, label={inverse}]{haskell}
+inverse :: Integral a => a -> a -> a
+inverse a b
+    | r == 1 = i `mod` b
+    | otherwise = -1
+        where
+            (r,i,_) = extended_euclides a b
+\end{minted}
+
+\section{\textcolor{rojo}Ejercicio 3}
+\textit{Escribe una función que calcule $a^b \; mod \; n$ para cualesquiera $a, b \in \mathbb{Z}$ que sean primos relativos. La implementación debería tener en cuenta la representación binaria de $b$.}
+
+Para hacer este ejercicio, podríamos primero realizar la potencia $a^b$ y después, calcular el módulo $n$ del resultado. Ahora bien, para un $b$ muy grande esta aproximación es muy costosa.
+
+Es por eso que debe considerarse la representación binaria de $b = \sum_{i=0}^t b_i 2^i$. Usando dicha represetación binaria, $a^b$ puede calcularse como:
+
+
+
+\end{document}
