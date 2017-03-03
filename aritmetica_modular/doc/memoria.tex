@@ -102,6 +102,135 @@ Para hacer este ejercicio, podríamos primero realizar la potencia $a^b$ y despu
 
 Es por eso que debe considerarse la representación binaria de $b = \sum_{i=0}^t b_i 2^i$. Usando dicha represetación binaria, $a^b$ puede calcularse como:
 
+\begin{displaymath}
+a^b = \prod_{i=0}^{t} a^{b_i2^i} = \left(a^{2^0} \right)^{b_0} \left(a^{2^1} \right)^{b_1} \cdots \left(a^{2^t} \right)^{b_t}
+\end{displaymath}
+
+El algoritmo da tantos pasos como dígitos tenga la representación binaria de $b$ pero la complejidad de los cálculos está limitada por $n$ y no perderemos tiempo haciendo una potencia muy grande para después aplicarle un módulo.
+
+He desarrollado dos funciones Haskell para este ejercicio:
+
+\begin{enumerate}[---]
+    \item \texttt{exponential\_zn}: recibe como parámetros tres valores $(a, b, n)$ y comprueba los casos base, $b=0$ y $b=1$.
+
+\begin{minted}[linenos, frame=lines, label={exponential\_zn}]{haskell}
+exponential_zn :: Integral a => a -> a -> a -> a
+exponential_zn _ 0 _ = 1
+exponential_zn a 1 _ = a
+exponential_zn a k n = exponential_zn_aux a k n 1 ki
+                where
+                    ki = k `mod` 2
+\end{minted}
+
+    \item \texttt{exponential\_zn\_aux}: realiza el cálculo de la potencia usando la representación binaria de $b$. Es importante destacar que no se calcula la representación binaria de $b$ sino que, en cada paso, se calcula el bit $b_i$ correspondiente.
+
+\begin{minted}[linenos, frame=lines, label={exponential\_zn\_aux}]{haskell}
+exponential_zn_aux :: Integral a => a -> a -> a -> a -> a -> a
+exponential_zn_aux a 1 n b _ = a*b `mod` n
+exponential_zn_aux a k n b ki
+    | ki == 0   = exponential_zn_aux a0 k0 n b ki0
+    | otherwise = exponential_zn_aux a0 k0 n b0 ki0
+                where
+                    a0  = a*a `mod` n
+                    k0  = k `div` 2
+                    ki0 = k0 `mod` 2
+                    b0  = a*b `mod` n
+\end{minted}
+\end{enumerate}
+
+\section{\textcolor{rojo}Ejercicio 4}
+\textit{Dado un entero $p$, escribe una función para determinar si $p$ es (probablemente) primo usando el método de \textbf{\textcolor{rojo}{Miller-Rabin}}.}
+
+El método de \textit{\textcolor{rojo}{Miller-Rabin}} tiene los siguientes pasos:
+
+\begin{enumerate}[1.]
+    \item En primer lugar, debemos descomponer $p -1 = 2^u \cdot s$. Para ello, dividimos $p-1$ entre $2$ hasta obtener resto $1$. $u$ es el número de divisiones que hemos hecho hasta obtener el resto $1$ (sin contar esa última) y $s$ es el cociente de la última división con resto $0$ que hemos hecho, debe ser \textbf{\textcolor{rojo}{impar}}.
+
+\begin{minted}[linenos, frame=lines, label={descomposicion\_2us}]{haskell}
+descomposicion_2us :: Integral a => a -> a -> (a, a)
+descomposicion_2us p t 
+    | m == 0    = descomposicion_2us u s
+    | otherwise = (t, p)
+                where
+                    u = p `div` 2
+                    s = t + 1
+                    m = p `mod` 2   
+\end{minted}
+
+    \item Tomamos un $a$ aleatorio tal que $2 \leq a \leq p-2$. En este paso, se rompe la \textit{\textcolor{rojo}{transparencia referencial}} de Haskell, ya que cada vez que se ejecuta la función se obtiene un $a$ distinto:
+
+\begin{minted}[linenos, frame=lines, label={Obteniendo un a random}]{haskell}
+a = unsafePerformIO (randomRIO (2, p-2))
+\end{minted}
+    
+    \item Calculamos el valor a $a=a^s$. Si es igual a $1$ o a $p-1$, $p$ será probablemente primo y termina la ejecución de la función.
+
+    \item Si no ha sido así, iteramos desde $i=1$ hasta $i=u-1$ haciendo en cada paso $a = a^2$. Si en algún paso $a=1$, debemos comprobar que en el paso anterior obtuvimos $a=p-1$. Si esto se cumple, $p$ será probablemente primo y si no se cumple, no lo será.
+\end{enumerate}
+
+Todos estos pasos, están reflejados en las siguientes funciones:
+
+\begin{minted}[linenos, frame=lines, label={Test de Miller-Rabin}]{haskell}
+miller_rabin_once :: (Integral a, Random a) => a -> Bool
+miller_rabin_once p
+    | p < 5                = error "Imposible aplicar test para p < 5"
+    | b == 1 || b == (p-1) = True
+    | otherwise            = miller_rabin_ok p u b 0 0
+            where
+                (u,s) = descomposicion_2us (p-1) 0
+                a     = unsafePerformIO (randomRIO (2, p-2))
+                b     = exponential_zn a s p
+
+
+miller_rabin_ok :: (Integral a, Random a) => a -> a -> a -> a -> a -> Bool
+miller_rabin_ok p u a i b
+    | a == 1 && b == (p-1) = True
+    | a == 1 && b /= (p-1) = False
+    | i >= u               = False
+    | otherwise            = miller_rabin_ok p u c (i+1) a
+        where
+            c = exponential_zn a 2 p
+\end{minted}
+
+Ahora bien, este test probabililístico tiene probabilidad de fallar $p_{error}^1 = \frac{1}{4}$. Por tanto, debemos repetir el test varias veces para obtener una probabilidad menor. En nuestro caso, lo hacemos 10 veces, obteniendo una probabilidad de error $p_{error}^{10} = \frac{1}{4^{10}}$.
+
+\begin{minted}[linenos, frame=lines, label={Repetición del test 10 veces}]{haskell}
+miller_rabin :: (Integral a, Random a) => a -> Bool
+miller_rabin p = foldl1 (&&) (map miller_rabin_once (take 10 (repeat p))) 
+\end{minted}
+
+\section{\textcolor{rojo}Ejercicio 5}
+\textit{Implementa el algoritmo \textbf{\textcolor{rojo}{paso enano-paso gigante}} para el cálculo de logaritmos discretos en $\mathbb{Z}_p$.}
+
+Este algoritmo se basa en el cálculo de dos tablas, $S$ y $T$, para encontrar coincidencias entre ellas:
+
+\begin{displaymath}
+S = \{c, ca, ca^2, \cdots, ca^n\} \qquad\ T = \{a^2, a^{2s}, \cdots, a^{ts}, \cdots, a^{ss}\}
+\end{displaymath}
+
+Para hacer estas listas, he usado la función \texttt{zipWith} de Haskell. 
+
+En el caso de la lista $S$, la he generado con el siguiente código:
+
+\begin{minted}[linenos, frame=lines, label={Calculando la tabla S}]{haskell}
+l1   = replicate (fromIntegral s) a
+pa   = zipWith (\x y -> exponential_zn x y p) l1 [0..(fromIntegral s)]
+tabS = zipWith (\x y -> x * y `mod` p) pa (replicate (fromIntegral s) c)
+\end{minted}
+
+en primer lugar, creo una lista con las potencias de $a$: $pa = \{a^0, a^1, \cdots, a^s\}$ y por último, la multiplico (módulo $p$) con una lista de $s$ elementos $c$.
+
+En el caso de la lista $T$, la he generado con el siguiente código:
+
+\begin{minted}[linenos, frame=lines, label={Calculando la tabla T}]{haskell}
+as   = exponential_zn a (fromIntegral s) p
+asl  = (replicate (fromIntegral s) as)
+tabT = zipWith (\x y -> exponential_zn x y p) asl [1..(fromIntegral s)]
+\end{minted}
+
+en primer lugar, calculo el valor de $as=a^s \; mod \; p$ y creo una lista repitiendo $s$ veces $as$. Por último, calculo la lista $T$ usando la función $a^b \;mod\;n$ que he desarrollado en el ejercicio anterior.
+
+Una vez tengo calculadas ambas listas, paso a buscar coincidencias entre ellas calculando su intersección:
 
 
 \end{document}
