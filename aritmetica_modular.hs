@@ -117,7 +117,7 @@ getIndexTwoLists i t r = (it+1, ir)
                 it = (fromIntegral (fromJust (elemIndex i t)))
                 ir = (fromIntegral (fromJust (elemIndex i r)))
 
-shanks :: Integral a => a -> a -> a -> [a]
+shanks :: (Integral a, Random a) => a -> a -> a -> [a]
 shanks a c p 
     | not $ miller_rabin p = error "p debe ser primo"
     | otherwise            = k
@@ -132,4 +132,30 @@ shanks a c p
             i    = intersect tabS tabT
             indx = map (\x -> getIndexTwoLists x tabT tabS) i
             k    = map (\x -> (fst x)*s - (snd x)) indx
-      
+
+{-
+Ejercicio 6
+
+Sea n=pq, con p y q enteros y primos relativos
+    * Escribe una función que, dado un entero a y un primo p con (a/p) = 1, devuelve r 
+      tal que r^2=a mod p; primero te hará falta implementar el símbolo de Jacobi.
+
+    * Sea a un entero que es residuo cuadrático módulo p y q. Usa el teorema chino de
+      los restos para calcular todas las raíces cuadradas de a mod n a partir de las raíces
+      cuadradas de a módulo p y q.
+-}
+
+-- para añadir más primos a la lista: 
+-- https://en.wikipedia.org/wiki/List_of_prime_numbers#The_first_1000_prime_numbers
+descomposicion_primos :: (Integral a) => a -> [a]
+descomposicion_primos n = prime_factor n p
+        where
+            lp = [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,61,67,71,73,79,83,89,97,101]
+            p  = filter (\x -> n `mod` x == 0) lp
+
+prime_factor :: (Integral a) => a -> [a] -> [a]
+prime_factor 1 _      = []
+prime_factor n (x:xs) = x : prime_factor d l
+        where
+            d = n `div` x
+            l = filter (\x -> d `mod` x == 0) (x:xs)

@@ -265,7 +265,7 @@ k    = map (\x -> (fst x)*s - (snd x)) indx
 Todos estos pasos están reflejados en la función \texttt{shanks} que he desarrollado:
 
 \begin{minted}[linenos, frame=lines, label={shanks}]{haskell}
-shanks :: Integral a => a -> a -> a -> [a]
+shanks :: (Integral a, Random a) => a -> a -> a -> [a]
 shanks a c p 
     | not $ miller_rabin p = error "p debe ser primo"
     | otherwise            = k
