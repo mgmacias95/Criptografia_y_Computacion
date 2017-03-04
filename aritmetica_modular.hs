@@ -87,9 +87,10 @@ miller_rabin p = foldl1 (&&) (map miller_rabin_once (take 10 (repeat p)))
 -- comprueba que p >= 5
 miller_rabin_once :: (Integral a, Random a) => a -> Bool
 miller_rabin_once p
-    | p < 5                = error "Imposible aplicar test para p < 5"
-    | b == 1 || b == (p-1) = True
-    | otherwise            = miller_rabin_ok p u b 0 0
+    | even p && p > 2             = False
+    | (odd p && p <= 5) || p == 2 = True
+    | b == 1 || b == (p-1)        = True
+    | otherwise                   = miller_rabin_ok p u b 0 0
             where
                 (u,s) = descomposicion_2us (p-1) 0
                 a     = unsafePerformIO (randomRIO (2, p-2))
@@ -159,3 +160,32 @@ prime_factor n (x:xs) = x : prime_factor d l
         where
             d = n `div` x
             l = filter (\x -> d `mod` x == 0) (x:xs)
+
+-- simbolo de jacobi
+jacobi :: (Integral a, Random a) => a -> a -> a
+jacobi a n
+    | even n    = error "n debe ser impar"
+    | otherwise = jacobi_impar a n
+
+jacobi_impar :: (Integral a, Random a) => a -> a -> a
+jacobi_impar a n
+    | a > n                = jacobi_impar (a `mod` n) n
+    | not (miller_rabin a) = foldl1 (*) $ map (\x -> jacobi_impar x n) primos
+    | mcd == 1 && cond0    = 1
+    | a == -1 && cond1     = 1
+    | a == -1 && cond2     = -1
+    | a == 2 && cond3      = 1
+    | a == 2 && cond4      = -1
+    | cond5 && cond6       = -(jacobi_impar n a)
+    | cond5                = jacobi_impar n a
+    | otherwise            = exponential_zn a ((n-1) `div` 2) n
+            where
+                primos    = descomposicion_primos a
+                cond0     = (sqrt (fromIntegral a)) - (fromIntegral (truncate $ sqrt (fromIntegral a))) /= 0
+                (mcd,_,_) = extended_euclides (truncate (sqrt (fromIntegral a))) n
+                cond1     = (n-1) `mod` 4 == 0
+                cond2     = (n-3) `mod` 4 == 0
+                cond3     = (n-1) `mod` 8 == 0 || (n+1) `mod` 8 == 0
+                cond4     = (n-3) `mod` 8 == 0 || (n+3) `mod` 8 == 0
+                cond5     = odd a && odd n
+                cond6     = (a-3) `mod` 4 == 0 && cond2
