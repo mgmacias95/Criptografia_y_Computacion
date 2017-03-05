@@ -173,14 +173,14 @@ Todos estos pasos, están reflejados en las siguientes funciones:
 \begin{minted}[linenos, frame=lines, label={Test de Miller-Rabin}]{haskell}
 miller_rabin_once :: (Integral a, Random a) => a -> Bool
 miller_rabin_once p
-    | p < 5                = error "Imposible aplicar test para p < 5"
-    | b == 1 || b == (p-1) = True
-    | otherwise            = miller_rabin_ok p u b 0 0
+    | even p && p > 2             = False
+    | (odd p && p <= 5) || p == 2 = True
+    | b == 1 || b == (p-1)        = True
+    | otherwise                   = miller_rabin_ok p u b 0 0
             where
                 (u,s) = descomposicion_2us (p-1) 0
                 a     = unsafePerformIO (randomRIO (2, p-2))
                 b     = exponential_zn a s p
-
 
 miller_rabin_ok :: (Integral a, Random a) => a -> a -> a -> a -> a -> Bool
 miller_rabin_ok p u a i b
