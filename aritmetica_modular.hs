@@ -171,6 +171,7 @@ jacobi_impar :: (Integral a, Random a) => a -> a -> a
 jacobi_impar a n
     | a > n                   = jacobi_impar (a `mod` n) n
     | not (miller_rabin a)    = foldl1 (*) $ map (\x -> jacobi_impar x n) primos
+    | a == 1                  = 1
     | a == -1                 = (-1)^((n - 1) `div` 2)
     | a == 2                  = (-1)^((n^2 - 1) `div` 8)
     | impar && cond           = -(jacobi_impar n a)

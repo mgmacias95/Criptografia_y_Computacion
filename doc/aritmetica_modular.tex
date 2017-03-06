@@ -316,7 +316,7 @@ El \textit{\textcolor{rojo}{símbolo de Jacobi}} es una herramienta para el cál
     \begin{aligned}
     \left( \frac{a}{n} \right) = \left( \frac{a \bmod n}{n} \right)
     \end{aligned}
-    \phantom{\hspace{12cm}}
+    \phantom{\hspace{18cm}}
 \end{equation*}
 
 \begin{minted}{haskell}
@@ -328,7 +328,7 @@ El \textit{\textcolor{rojo}{símbolo de Jacobi}} es una herramienta para el cál
     \begin{aligned}
     \left( \frac{a \cdot b}{n} \right) = \left( \frac{a}{n} \right) \cdot \left( \frac{b}{n} \right)
     \end{aligned}
-    \phantom{\hspace{12cm}}
+    \phantom{\hspace{18cm}}
 \end{equation*}
 
 \begin{minted}{haskell}
@@ -342,11 +342,23 @@ El \textit{\textcolor{rojo}{símbolo de Jacobi}} es una herramienta para el cál
     \begin{aligned}
     \left( \frac{a}{n} \right) \equiv a^{\frac{n-1}{2}} \bmod n
     \end{aligned}
-    \phantom{\hspace{12cm}}
+    \phantom{\hspace{18cm}}
 \end{equation*}
 
 \begin{minted}{haskell}
 | otherwise = exponential_zn a ((n-1) `div` 2) n
+\end{minted}
+
+\item
+\begin{equation*}
+    \begin{aligned}
+    \left( \frac{1}{n} \right) = 1
+    \end{aligned}
+    \phantom{\hspace{18cm}}
+\end{equation*}
+
+\begin{minted}{haskell}
+| a == 1 = 1
 \end{minted}
 
 \item
@@ -357,7 +369,7 @@ El \textit{\textcolor{rojo}{símbolo de Jacobi}} es una herramienta para el cál
         -1 & si \;n \equiv 3 \bmod 4\\
         \end{cases}
     \end{aligned}
-    \phantom{\hspace{12cm}}
+    \phantom{\hspace{18cm}}
 \end{equation*}
 
 \begin{minted}{haskell}
@@ -372,7 +384,7 @@ El \textit{\textcolor{rojo}{símbolo de Jacobi}} es una herramienta para el cál
         -1 & si \;n \equiv \pm 3 \bmod 8\\
         \end{cases}
     \end{aligned}
-    \phantom{\hspace{12cm}}
+    \phantom{\hspace{18cm}}
 \end{equation*}
 
 \begin{minted}{haskell}
@@ -387,7 +399,7 @@ El \textit{\textcolor{rojo}{símbolo de Jacobi}} es una herramienta para el cál
         \quad\left( \frac{n}{m} \right) & \text{en caso contrario}\\
         \end{cases}
     \end{aligned}
-    \phantom{\hspace{12cm}}
+    \phantom{\hspace{18cm}}
 \end{equation*}
 
 \begin{minted}{haskell}
@@ -411,6 +423,7 @@ jacobi_impar :: (Integral a, Random a) => a -> a -> a
 jacobi_impar a n
     | a > n                   = jacobi_impar (a `mod` n) n
     | not (miller_rabin a)    = foldl1 (*) $ map (\x -> jacobi_impar x n) primos
+    | a == 1                  = 1
     | a == -1                 = (-1)^((n - 1) `div` 2)
     | a == 2                  = (-1)^((n^2 - 1) `div` 8)
     | impar && cond           = -(jacobi_impar n a)
