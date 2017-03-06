@@ -171,20 +171,20 @@ jacobi_impar :: (Integral a, Random a) => a -> a -> a
 jacobi_impar a n
     | a > n                   = jacobi_impar (a `mod` n) n
     | not (miller_rabin a)    = foldl1 (*) $ map (\x -> jacobi_impar x n) primos
-    | a == -1                 = (-1)^((n - 1) `div` 8)
+    | a == -1                 = (-1)^((n - 1) `div` 2)
     | a == 2                  = (-1)^((n^2 - 1) `div` 8)
-    | cond5 && miller_rabin a = (-1)^exp
-    | cond5 && cond6          = -(jacobi_impar n a)
-    | cond5 && miller_rabin n = jacobi_impar n a
-    | mcd == 1                = 1
+    | impar && cond           = -(jacobi_impar n a)
+    | impar                   = jacobi_impar n a
     | otherwise               = exponential_zn a ((n-1) `div` 2) n
             where
                 primos    = descomposicion_primos a
-                (mcd,_,_) = extended_euclides ((shanks a 2 n) !! 0) n
-                cond1     = (n-1) `mod` 4 == 0
-                cond2     = (n-3) `mod` 4 == 0
-                cond3     = (n-1) `mod` 8 == 0 || (n+1) `mod` 8 == 0
-                cond4     = (n-3) `mod` 8 == 0 || (n+3) `mod` 8 == 0
-                cond5     = odd a && odd n 
-                cond6     = (a-3) `mod` 4 == 0 && cond2 && miller_rabin n
-                exp       = (((a-1)*(n-1)) `div` 4) `mod` n
+                impar     = odd a && odd n 
+                cond      = (a-3) `mod` 4 == 0 && (n-3) `mod` 4 == 0
+
+-- cuadrados :: Int -> Int -> Int
+-- cuadrados a p
+--     | not $ miller_rabin p = error "p debe ser primo"
+--     | jacobi a p /= 1      = error "(a/p) /= 1"
+--     | otherwise            = cuadrados_ok a p n
+--             where
+--                 n = dropWhile

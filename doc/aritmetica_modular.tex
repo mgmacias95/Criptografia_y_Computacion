@@ -282,4 +282,144 @@ shanks a c p
             k    = map (\x -> (fst x)*s - (snd x)) indx
 \end{minted}
 
+\section{\textcolor{rojo}Ejercicio 6}
+\textit{Sea $n = pq$, con $p$ y $q$ enteros primos positivos.
+\begin{enumerate}[\color{rojo}{\qquad $\bullet$}]
+    \item Escribe una función que, dado un entero $a$ y un primo $p$ con $\left( \frac{a}{p} \right) = 1$, devuelve $r$ tal que $r^2 \equiv a \bmod p$. Primero te hará falta implementar el \textbf{\textcolor{rojo}{símbolo de Jacobi}}.
+    \item Sea $a$ un entero que es residuo cuadrático módulo $p$ y $q$. Usa el \textbf{\textcolor{rojo}{teorema chino de los restos}} para calcular todas las raíces cuadradas de $a \bmod n$ a partir de las raíces cuadraas de $a$ módulo $p$ y $q$.
+\end{enumerate}}
+
+\subsection{\textcolor{rojo}Descomposición en factores primos}
+Para obtener los factores primos de un número, he implementado un método de ``fuerza bruta'' que consiste en, en primer lugar obtener los divisores primos de un número (usando la función \texttt{filter} y una lista con los primeros primos) y, después, implementar la ``cuenta de la vieja'' diviendo el número por cada factor: empezamos diviendo entre el primero, hasta obtener un resto distinto de cero, después, seguiríamos con el siguiente hasta llegar a un conciente 1.
+
+\begin{minted}[linenos, frame=lines, label={Descomposición en factores primos}]{haskell}
+descomposicion_primos :: (Integral a) => a -> [a]
+descomposicion_primos n = prime_factor n p
+        where
+            lp = [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,61,67,71,73,79,83,89,97,101]
+            p  = filter (\x -> n `mod` x == 0) lp
+
+prime_factor :: (Integral a) => a -> [a] -> [a]
+prime_factor 1 _      = []
+prime_factor n (x:xs) = x : prime_factor d l
+        where
+            d = n `div` x
+            l = filter (\x -> d `mod` x == 0) (x:xs)
+\end{minted}
+
+\subsection{\textcolor{rojo}Símbolo de Jacobi}
+El \textit{\textcolor{rojo}{símbolo de Jacobi}} es una herramienta para el cálculo del \textit{\textcolor{rojo}{símbolo de Legendre}}, las propiedades de este último se extienden al símbolo de Jacobi. Estas propiedades, y sus respectivas implementaciones en Haskell, son:
+
+\begin{enumerate}[1.]
+\item 
+\begin{equation*}
+    \begin{aligned}
+    \left( \frac{a}{n} \right) = \left( \frac{a \bmod n}{n} \right)
+    \end{aligned}
+    \phantom{\hspace{12cm}}
+\end{equation*}
+
+\begin{minted}{haskell}
+| a > n = jacobi_impar (a `mod` n) n 
+\end{minted}
+
+\item 
+\begin{equation*}
+    \begin{aligned}
+    \left( \frac{a \cdot b}{n} \right) = \left( \frac{a}{n} \right) \cdot \left( \frac{b}{n} \right)
+    \end{aligned}
+    \phantom{\hspace{12cm}}
+\end{equation*}
+
+\begin{minted}{haskell}
+| not (miller_rabin a) = foldl1 (*) $ map (\x -> jacobi_impar x n) primos
+        where
+              primos = descomposicion_primos a
+\end{minted}
+
+\item
+\begin{equation*}
+    \begin{aligned}
+    \left( \frac{a}{n} \right) \equiv a^{\frac{n-1}{2}} \bmod n
+    \end{aligned}
+    \phantom{\hspace{12cm}}
+\end{equation*}
+
+\begin{minted}{haskell}
+| otherwise = exponential_zn a ((n-1) `div` 2) n
+\end{minted}
+
+\item
+\begin{equation*}
+    \begin{aligned}
+    \left( \frac{-1}{n} \right) = (-1)^{\frac{n-1}{2}} = \begin{cases}
+        1 & si \;n \equiv 1 \bmod 4 \\
+        -1 & si \;n \equiv 3 \bmod 4\\
+        \end{cases}
+    \end{aligned}
+    \phantom{\hspace{12cm}}
+\end{equation*}
+
+\begin{minted}{haskell}
+| a == -1 = (-1)^((n - 1) `div` 2)
+\end{minted}
+
+\item
+\begin{equation*}
+    \begin{aligned}
+    \left( \frac{2}{n} \right) = (-1)^{\frac{n^2-1}{2}} = \begin{cases}
+        1 & si \;n \equiv \pm 1 \bmod 8 \\
+        -1 & si \;n \equiv \pm 3 \bmod 8\\
+        \end{cases}
+    \end{aligned}
+    \phantom{\hspace{12cm}}
+\end{equation*}
+
+\begin{minted}{haskell}
+| a == 2 = (-1)^((n^2 - 1) `div` 8)
+\end{minted}
+
+\item Si $n$ y $m$ son números impares
+\begin{equation*}
+    \begin{aligned}
+    \left( \frac{m}{n} \right) = (-1)^{\frac{(n-1)\cdot(m-1)}{4}} \qquad\ \left( \frac{n}{m} \right) = \begin{cases}
+        - \left( \frac{n}{m} \right) & si \;m \equiv n \equiv 3 \bmod 8 \\
+        \quad\left( \frac{n}{m} \right) & \text{en caso contrario}\\
+        \end{cases}
+    \end{aligned}
+    \phantom{\hspace{12cm}}
+\end{equation*}
+
+\begin{minted}{haskell}
+| impar && cond           = -(jacobi_impar n a)
+| impar                   = jacobi_impar n a
+        where
+            impar     = odd a && odd n 
+            cond      = (a-3) `mod` 4 == 0 && (n-3) `mod` 4 == 0
+\end{minted}
+\end{enumerate}
+
+La implementación del algoritmo es:
+
+\begin{minted}[linenos, frame=lines, label={jacobi}]{haskell}
+jacobi :: (Integral a, Random a) => a -> a -> a
+jacobi a n
+    | even n    = error "n debe ser impar"
+    | otherwise = jacobi_impar a n
+
+jacobi_impar :: (Integral a, Random a) => a -> a -> a
+jacobi_impar a n
+    | a > n                   = jacobi_impar (a `mod` n) n
+    | not (miller_rabin a)    = foldl1 (*) $ map (\x -> jacobi_impar x n) primos
+    | a == -1                 = (-1)^((n - 1) `div` 2)
+    | a == 2                  = (-1)^((n^2 - 1) `div` 8)
+    | impar && cond           = -(jacobi_impar n a)
+    | impar                   = jacobi_impar n a
+    | otherwise               = exponential_zn a ((n-1) `div` 2) n
+            where
+                primos    = descomposicion_primos a
+                impar     = odd a && odd n 
+                cond      = (a-3) `mod` 4 == 0 && (n-3) `mod` 4 == 0
+\end{minted}
+
 \end{document}
