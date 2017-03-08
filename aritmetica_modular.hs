@@ -3,6 +3,16 @@ import System.IO.Unsafe
 import Data.List 
 import Data.Maybe
 
+-- ternary operator
+data Cond a = a :? a
+ 
+infixl 0 ?
+infixl 1 :?
+ 
+(?) :: Bool -> Cond a -> a
+True  ? (x :? _) = x
+False ? (_ :? y) = y
+
 {-
 Ejercicio 1
 
@@ -46,7 +56,7 @@ La implementación debería tener en cuenta la representación binaria de b.
 -}
 exponential_zn :: Integral a => a -> a -> a -> a
 exponential_zn _ 0 _ = 1
-exponential_zn a 1 _ = a
+exponential_zn a 1 n = a `mod` n
 exponential_zn a k n = exponential_zn_aux a k n 1 ki
                 where
                     ki = k `mod` 2
@@ -148,10 +158,15 @@ Sea n=pq, con p y q enteros y primos relativos
 
 -- para añadir más primos a la lista: 
 -- https://en.wikipedia.org/wiki/List_of_prime_numbers#The_first_1000_prime_numbers
-descomposicion_primos :: (Integral a) => a -> [a]
-descomposicion_primos n = prime_factor n p
+descomposicion_primos :: (Integral a, Random a) => a -> [a]
+descomposicion_primos n 
+    | miller_rabin n = [n]
+    | otherwise      = prime_factor n p
         where
-            lp = [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,61,67,71,73,79,83,89,97,101]
+            lp = [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,
+                  83,89,97,101,103,107,109,113,127,131,137,139,149,151,157,163,
+                  167,173,179,181,191,193,197,199,211,223,227,229,233,239,241,251,
+                  257,263,269,271,277,281]
             p  = filter (\x -> n `mod` x == 0) lp
 
 prime_factor :: (Integral a) => a -> [a] -> [a]
@@ -182,10 +197,29 @@ jacobi_impar a n
                 impar     = odd a && odd n 
                 cond      = (a-3) `mod` 4 == 0 && (n-3) `mod` 4 == 0
 
--- cuadrados :: Int -> Int -> Int
--- cuadrados a p
---     | not $ miller_rabin p = error "p debe ser primo"
---     | jacobi a p /= 1      = error "(a/p) /= 1"
---     | otherwise            = cuadrados_ok a p n
---             where
---                 n = dropWhile
+cuadrados :: (Integral a, Random a) => a -> a -> a
+cuadrados a p
+    | not $ miller_rabin p = error "p debe ser primo"
+    | jacobi a p /= 1      = error "(a/p) /= 1"
+    | otherwise            = cuadrados_ok a p n u s b i
+            where
+                n     = fromIntegral $ fromJust $ elemIndex (-1) $ map (\x -> jacobi x p) [2..p-1]
+                (u,s) = descomposicion_2us (p-1) 0
+                b     = exponential_zn n s p
+                i     = inverse a p
+
+cuadrados_aux :: (Integral a, Random a) => a -> a -> a -> a -> a -> [a] -> [a]
+cuadrados_aux _ _ _ _ _ []     = []
+cuadrados_aux i b r u p (x:xs) = d : cuadrados_aux i b rb u p xs
+        where
+            r2 = exponential_zn r 2 p
+            d  = exponential_zn (i*r2) (2^(u - 2 - x)) p
+            rb = d == (p-1) ? r*b :? r
+
+cuadrados_ok :: (Integral a, Random a) => a -> a -> a -> a -> a -> a -> a -> a
+cuadrados_ok a p _ 1 _ _ _ = a^((p+1) `div` 4)
+cuadrados_ok a p n u s b i = 0
+        where
+            r     = exponential_zn a ((s+1) `div` 2) p
+            r2    = exponential_zn r 2 p
+            rlist = cuadrados_aux i b r u p [0..u-2]
