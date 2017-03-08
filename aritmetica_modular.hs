@@ -197,27 +197,27 @@ jacobi_impar a n
                 impar     = odd a && odd n 
                 cond      = (a-3) `mod` 4 == 0 && (n-3) `mod` 4 == 0
 
-cuadrados :: (Integral a, Random a) => a -> a -> [a]
+cuadrados :: (Integral a, Random a) => a -> a -> a
 cuadrados a p
     | not $ miller_rabin p = error "p debe ser primo"
     | jacobi a p /= 1      = error "(a/p) /= 1"
     | otherwise            = cuadrados_ok a p n u s b i
             where
-                n     = fromIntegral $ fromJust $ elemIndex (-1) $ map (\x -> jacobi x p) [2..p-1]
+                n     = (fromIntegral $ fromJust $ elemIndex (-1) $ map (\x -> jacobi x p) [2..p-1]) + 2
                 (u,s) = descomposicion_2us (p-1) 0
                 b     = exponential_zn n s p
                 i     = inverse a p
 
-cuadrados_aux :: (Integral a, Random a) => a -> a -> a -> a -> a -> [a] -> [a]
-cuadrados_aux _ _ _ _ _ []     = []
-cuadrados_aux i b r u p (x:xs) = d : cuadrados_aux i (exponential_zn b 2 p) rb u p xs
+cuadrados_aux :: (Integral a, Random a) => a -> a -> a -> a -> a -> [a] -> a
+cuadrados_aux _ _ r _ _ []     = r
+cuadrados_aux i b r u p (x:xs) = cuadrados_aux i (exponential_zn b 2 p) rb u p xs
         where
             r2 = exponential_zn r 2 p
             d  = exponential_zn (i*r2) (2^(u - 2 - x)) p
-            rb = d == (p-1) ? r*b :? r
+            rb = d == (p-1) ? (r*b `mod` p) :? r
 
-cuadrados_ok :: (Integral a, Random a) => a -> a -> a -> a -> a -> a -> a -> [a]
-cuadrados_ok a p _ 1 _ _ _ = [a^((p+1) `div` 4)]
+cuadrados_ok :: (Integral a, Random a) => a -> a -> a -> a -> a -> a -> a -> a
+cuadrados_ok a p _ 1 _ _ _ = a^((p+1) `div` 4)
 cuadrados_ok a p n u s b i = rlist
         where
             r     = exponential_zn a ((s+1) `div` 2) p
