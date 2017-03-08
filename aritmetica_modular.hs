@@ -203,7 +203,8 @@ cuadrados a p
     | jacobi a p /= 1      = error "(a/p) /= 1"
     | otherwise            = cuadrados_ok a p n u s b i
             where
-                n     = (fromIntegral $ fromJust $ elemIndex (-1) $ map (\x -> jacobi x p) [2..p-1]) + 2
+                n     = (fromIntegral $ fromJust $ elemIndex (-1) $ 
+                        map (\x -> jacobi x p) [2..p-1]) + 2
                 (u,s) = descomposicion_2us (p-1) 0
                 b     = exponential_zn n s p
                 i     = inverse a p
