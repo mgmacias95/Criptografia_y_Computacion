@@ -193,8 +193,7 @@ jacobi_impar a n
     | impar                   = jacobi_impar n a
     | otherwise               = exponential_zn a ((n-1) `div` 2) n
             where
-                (u,s)     = descomposicion_2us a n
-                primos    = [u,s]
+                primos    = descomposicion_primos a
                 impar     = odd a && odd n 
                 cond      = (a-3) `mod` 4 == 0 && (n-3) `mod` 4 == 0
 
