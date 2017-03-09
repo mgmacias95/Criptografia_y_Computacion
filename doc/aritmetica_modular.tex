@@ -312,6 +312,8 @@ prime_factor n (x:xs) = x : prime_factor d l
             l = filter (\x -> d `mod` x == 0) (x:xs)
 \end{minted}
 
+He preferido usar este método en vez de descomponer un número en $2^u \cdot s$ debido a que cuando el $2$ no era raíz del número $n$, mi implementación del símbolo de Jacobi entraba en un ciclo infinito, ya que el número realmente no se descomponía ($n = 2^0 \cdot n$). Soy consciente de que puede no funcionar con números grandes cuyos divisores primos no estén en la lista pero la solución a eso sería implementar métodos más avanzados para saber los divisores primos de un número o añadir más números primos a la lista.
+
 \subsection{\textcolor{rojo}Símbolo de Jacobi}
 El \textit{\textcolor{rojo}{símbolo de Jacobi}} es una herramienta para el cálculo del \textit{\textcolor{rojo}{símbolo de Legendre}}, las propiedades de este último se extienden al símbolo de Jacobi. Estas propiedades, y sus respectivas implementaciones en Haskell, son:
 
