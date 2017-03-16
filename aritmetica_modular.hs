@@ -197,17 +197,20 @@ jacobi_impar a n
                 impar     = odd a && odd n 
                 cond      = (a-3) `mod` 4 == 0 && (n-3) `mod` 4 == 0
 
-cuadrados :: (Integral a, Random a) => a -> a -> a
+cuadrados :: (Integral a, Random a) => a -> a -> (a,a)
 cuadrados a p
     | not $ miller_rabin p = error "p debe ser primo"
     | jacobi a p /= 1      = error "(a/p) /= 1"
-    | otherwise            = cuadrados_ok a p n u s b i
+    | otherwise            = (raiz1, raiz2)
             where
                 n     = (fromIntegral $ fromJust $ elemIndex (-1) $ 
                         map (\x -> jacobi x p) [2..p-1]) + 2
                 (u,s) = descomposicion_2us (p-1) 0
                 b     = exponential_zn n s p
                 i     = inverse a p
+                raiz1 = cuadrados_ok a p n u s b i
+                raiz2 = p - raiz1
+
 
 cuadrados_aux :: (Integral a, Random a) => a -> a -> a -> a -> a -> [a] -> a
 cuadrados_aux _ _ r _ _ []     = r
@@ -224,3 +227,21 @@ cuadrados_ok a p n u s b i = rlist
             r     = exponential_zn a ((s+1) `div` 2) p
             r2    = exponential_zn r 2 p
             rlist = cuadrados_aux i b r u p [0..u-2]
+
+teorema_chino_resto :: (Integral a, Random a) => a -> a -> a -> a -> a
+teorema_chino_resto a1 a2 p q = (a1 + p*l) `mod` (p*q)
+        where
+            pi = inverse p q
+            l  = (a2 - a1) * pi
+
+raices_cuadradas :: (Integral a, Random a) => a -> a -> a -> (a,a,a,a)
+raices_cuadradas r p q = (r1, r2, r3, r4)
+        where
+            (a1, a3) = cuadrados r p
+            (a2, a4) = cuadrados r q
+            n        = p*q
+            r1       = teorema_chino_resto a1 a2 p q
+            r2       = n - r1
+            r3       = teorema_chino_resto a1 a4 p q
+            r4       = n - r3
+

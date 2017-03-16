@@ -443,22 +443,24 @@ jacobi_impar a n
 \end{minted}
 
 \subsection{\textcolor{rojo}Cálculo de raíces cuadradas}
-Con el \textit{\textcolor{rojo}{símbolo de Jacobi}} ya podemos saber, dado un primo $p$ y un número $a$, si $a$ tiene raíz cuadrada. Ahora, vamos a avanzar un paso más alla y vamos a calcular dicha raíz. 
+Con el \textit{\textcolor{rojo}{símbolo de Jacobi}} ya podemos saber, dado un primo $p$ y un número $a$, si $a$ tiene raíz cuadrada. Ahora, vamos a avanzar un paso más alla y vamos a calcular dicha raíz. Sólo es necesario calcular una de las raíces debido a que la otra es simplemente restar la primera menos $p$ (es la \textit{\textcolor{rojo}{complementaria}}).
 
 Para calcular dicha raíz he implementado el algoritmo de los apuntes de clase.
 
 \begin{minted}[linenos, frame=lines, label={Cálculo de raíces cuadradas}]{haskell}
-cuadrados :: (Integral a, Random a) => a -> a -> a
+cuadrados :: (Integral a, Random a) => a -> a -> [a]
 cuadrados a p
     | not $ miller_rabin p = error "p debe ser primo"
     | jacobi a p /= 1      = error "(a/p) /= 1"
-    | otherwise            = cuadrados_ok a p n u s b i
+    | otherwise            = [raiz1, raiz2]
             where
                 n     = (fromIntegral $ fromJust $ elemIndex (-1) $ 
                         map (\x -> jacobi x p) [2..p-1]) + 2
                 (u,s) = descomposicion_2us (p-1) 0
                 b     = exponential_zn n s p
                 i     = inverse a p
+                raiz1 = cuadrados_ok a p n u s b i
+                raiz2 = p - raiz1
 
 cuadrados_aux :: (Integral a, Random a) => a -> a -> a -> a -> a -> [a] -> a
 cuadrados_aux _ _ r _ _ []     = r
