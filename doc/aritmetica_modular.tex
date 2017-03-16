@@ -299,10 +299,7 @@ descomposicion_primos n
     | miller_rabin n = [n]
     | otherwise      = prime_factor n p
         where
-            lp = [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,
-                  83,89,97,101,103,107,109,113,127,131,137,139,149,151,157,163,
-                  167,173,179,181,191,193,197,199,211,223,227,229,233,239,241,251,
-                  257,263,269,271,277,281]
+            lp = filter miller_rabin [2..n]
             p  = filter (\x -> n `mod` x == 0) lp
 
 prime_factor :: (Integral a) => a -> [a] -> [a]
@@ -313,7 +310,7 @@ prime_factor n (x:xs) = x : prime_factor d l
             l = filter (\x -> d `mod` x == 0) (x:xs)
 \end{minted}
 
-He preferido usar este método en vez de descomponer un número en $2^u \cdot s$ debido a que cuando el $2$ no era raíz del número $n$, mi implementación del símbolo de Jacobi entraba en un ciclo infinito, ya que el número realmente no se descomponía ($n = 2^0 \cdot n$). Soy consciente de que puede no funcionar con números grandes cuyos divisores primos no estén en la lista pero la solución a eso sería implementar métodos más avanzados para saber los divisores primos de un número o añadir más números primos a la lista.
+He preferido usar este método en vez de descomponer un número en $2^u \cdot s$ debido a que cuando el $2$ no era raíz del número $n$, mi implementación del símbolo de Jacobi entraba en un ciclo infinito, ya que el número realmente no se descomponía ($n = 2^0 \cdot n$). Soy consciente de que esta aproximación puede ser bastante lenta pero para mí ha sido lo más sencillo de implementar.
 
 \subsection{\textcolor{rojo}Símbolo de Jacobi}
 El \textit{\textcolor{rojo}{símbolo de Jacobi}} es una herramienta para el cálculo del \textit{\textcolor{rojo}{símbolo de Legendre}}, las propiedades de este último se extienden al símbolo de Jacobi. Estas propiedades, y sus respectivas implementaciones en Haskell, son:

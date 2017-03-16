@@ -155,18 +155,12 @@ Sea n=pq, con p y q enteros y primos relativos
       los restos para calcular todas las raíces cuadradas de a mod n a partir de las raíces
       cuadradas de a módulo p y q.
 -}
-
--- para añadir más primos a la lista: 
--- https://en.wikipedia.org/wiki/List_of_prime_numbers#The_first_1000_prime_numbers
 descomposicion_primos :: (Integral a, Random a) => a -> [a]
 descomposicion_primos n 
     | miller_rabin n = [n]
     | otherwise      = prime_factor n p
         where
-            lp = [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,
-                  83,89,97,101,103,107,109,113,127,131,137,139,149,151,157,163,
-                  167,173,179,181,191,193,197,199,211,223,227,229,233,239,241,251,
-                  257,263,269,271,277,281]
+            lp = filter miller_rabin [2..n]
             p  = filter (\x -> n `mod` x == 0) lp
 
 prime_factor :: (Integral a) => a -> [a] -> [a]
@@ -245,3 +239,27 @@ raices_cuadradas r p q = (r1, r2, r3, r4)
             r3       = teorema_chino_resto a1 a4 p q
             r4       = n - r3
 
+{-
+Ejercicio 7
+
+* Implementa el método de Fermat para factorización de enteros
+* Implementa el algoritmo de factorización de Pollard
+-}
+
+-- http://stackoverflow.com/questions/16228542/haskell-function-to-test-if-int-is-perfect-square-using-infinite-list#16228629
+isSquare n = elem n (takeWhile (<=n) [ x*x | x <- [1..]])
+
+-- usando Jacobi
+metodo_fermat :: (Integral a, Random a) => a -> a
+metodo_fermat n = metodo_fermat_aux x c n
+        where
+            x = ceiling (sqrt n)
+            c = x^2 - n
+
+metodo_fermat_aux :: (Integral a, Random a) => a -> a -> a -> a
+metodo_fermat_aux x c n
+    | jacobi c n == 1 = fromIntegral $ sqrt (fromIntegral c)
+    | otherwise       = metodo_fermat_aux x' c' n
+            where
+                x' = x+1
+                c' = x'^2 - n
