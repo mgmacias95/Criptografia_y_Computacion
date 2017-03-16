@@ -9,6 +9,7 @@
 \usepackage{colortbl}
 \usepackage{minted}
 \usepackage[left=3cm, right=3cm]{geometry}
+\usepackage{cancel}
 
 \usepackage[bookmarks=true,
             bookmarksnumbered=false, % true means bookmarks in
@@ -442,8 +443,8 @@ jacobi_impar a n
                 cond      = (a-3) `mod` 4 == 0 && (n-3) `mod` 4 == 0
 \end{minted}
 
-\subsection{\textcolor{rojo}Cálculo de raíces cuadradas}
-Con el \textit{\textcolor{rojo}{símbolo de Jacobi}} ya podemos saber, dado un primo $p$ y un número $a$, si $a$ tiene raíz cuadrada. Ahora, vamos a avanzar un paso más alla y vamos a calcular dicha raíz. Sólo es necesario calcular una de las raíces debido a que la otra es simplemente restar la primera menos $p$ (es la \textit{\textcolor{rojo}{complementaria}}).
+\subsection{\textcolor{rojo}Cálculo de cuadrados}
+Con el \textit{\textcolor{rojo}{símbolo de Jacobi}} ya podemos saber, dado un primo $p$ y un número $a$, si $a$ tiene cuadrado módulo $p$. Ahora, vamos a avanzar un paso más alla y vamos a calcular dicho cuadrado, $r$, tal que $r^2 = a \bmod p$. Sólo es necesario calcular uno de los cuadrados debido a que el otro es simplemente su \textit{\textcolor{rojo}{complementario}}.
 
 Para calcular dicha raíz he implementado el algoritmo de los apuntes de clase.
 
@@ -478,5 +479,107 @@ cuadrados_ok a p n u s b i = rlist
             r2    = exponential_zn r 2 p
             rlist = cuadrados_aux i b r u p [0..u-2]
 \end{minted}
+
+\subsection{\textcolor{rojo}Teorema chino del resto}
+Dado el sistema de dos congruencias de la \hyperref[eqinicial]{Ecuación \ref*{eqinicial}}
+
+\begin{equation}
+\label{eqinicial}
+\Bigg\{ \begin{matrix}
+    x & \equiv & a_1 \bmod p\\
+    x & \equiv & a_2 \bmod q
+\end{matrix}
+\end{equation}
+
+Debemos resolverlo despejando $x$ en la primera ecuación (\hyperref[eqdespx]{Ecuación \ref*{eqdespx}}) y sustituyendo en la segunda (\hyperref[eqsusx]{Ecuación \ref*{eqsusx}}).
+
+\begin{equation}
+\label{eqdespx}
+    x = a_1 + p \cdot l
+\end{equation}
+
+\begin{equation}
+\label{eqsusx}
+    a_1 + p \cdot l \equiv a_2 \bmod q
+\end{equation}
+
+
+Una vez hemos sustituido, debemos despejar $l$ para poder sustituir en la \hyperref[eqinicial]{Ecuación \ref*{eqinicial}}.
+
+\begin{equation}
+\label{eqpdesl}
+\begin{matrix}
+p \cdot l & \equiv & (a_2 - a_1) \bmod q \\
+l & \equiv & (a_2 - a_1) \cdot p^{-1} \bmod q\\
+l & = & (a_2 - a_1) \cdot p^{-1} + q \cdot s
+\end{matrix}     
+\end{equation}
+
+Al sustituir $l$ en la \hyperref[eqinicial]{Ecuación \ref*{eqinicial}} obtendríamos
+
+\begin{equation}
+\label{sustl}
+\begin{matrix}
+x & = & a_1 + p \cdot ((a_2 - a_1) \cdot \underbrace{p^{-1}}_{\bmod q} +\; q \cdot s)\\
+x & = & a_1 + (a_2 - a_1) \cdot p \cdot \underbrace{p^{-1}}_{\bmod q} +\; \cancel{p \cdot q \cdot s}
+\end{matrix}
+\end{equation}
+
+Al ser todos los valores restantes de la \hyperref[sustl]{Ecuación \ref*{sustl}} conocidos, ya tendríamos el resultado del \textcolor{rojo}{\textit{Teorema Chino del Resto}}.
+
+La implementación en Haskell es:
+
+\begin{minted}[linenos, frame=lines, label={Teorema Chino del Resto}]{haskell}
+teorema_chino_resto :: (Integral a, Random a) => a -> a -> a -> a -> a
+teorema_chino_resto a1 a2 p q = (a1 + p*l) `mod` (p*q)
+        where
+            pi = inverse p q
+            l  = (a2 - a1) * pi
+\end{minted}
+
+Nótese que las congruencias no se normalizan. No es necesario ya que esta función ya recibe los elementos de la congruencia normalizados.
+
+\subsection{\textcolor{rojo}Cálculo de Raíces Cuadradas}
+Una vez tenemos implementados todas las herramientas necesarias para resolver este ejercicio, lo único que debemos hacer es unirlas para dar las cuatro raíces.
+
+\begin{minted}[linenos, frame=lines, label={Calculando Raíces Cuadradas}]{haskell}
+raices_cuadradas :: (Integral a, Random a) => a -> a -> a -> (a,a,a,a)
+raices_cuadradas a p q = (r1, r2, r3, r4)
+        where
+            (a1, a3) = cuadrados a p
+            (a2, a4) = cuadrados a q
+            n        = p*q
+            r1       = teorema_chino_resto a1 a2 p q
+            r2       = n - r1
+            r3       = teorema_chino_resto a1 a4 p q
+            r4       = n - r3
+
+\end{minted}
+
+Esta función recibe como entrada tres números: $a$, $p$ y $q$. En primer lugar, debemos calcular cuatro números, $a_1$, $a_2$, $a_3$ y $a_4$, llamando a la función \texttt{cuadrados}.
+
+\begin{displaymath}
+\begin{matrix}
+    \sqrt{a} \in \mathbb{Z}_p & = & \{a_1, a_3 \} \\
+    \sqrt{a} \in \mathbb{Z}_q & = & \{a_2, a_4 \}
+\end{matrix}
+\end{displaymath}
+
+Una vez calculados, sólo debemos hacer dos llamadas al \textit{\textcolor{rojo}{Teorema Chino del Resto}}:
+
+\begin{displaymath}
+\Bigg\{ \begin{matrix}
+r_1 & \equiv & a_1 \bmod p \\
+r_1 & \equiv & a_2 \bmod q 
+\end{matrix}
+\qquad\
+\Bigg\{ 
+\begin{matrix}
+r_3 & \equiv & a_1 \bmod p \\
+r_3 & \equiv & a_4 \bmod q 
+\end{matrix}
+\end{displaymath}
+
+Las otras dos raíces restantes son los complementarios de estas dos calculadas.
 
 \end{document}
