@@ -579,4 +579,35 @@ r_3 & \equiv & a_4 \bmod q
 
 Las otras dos raíces restantes son los complementarios de estas dos calculadas.
 
+\section{\textcolor{rojo}Ejercicio 7}
+\begin{enumerate}[\color{rojo}{$\bullet$}]
+    \item \textit{Implementa el \textbf{\textcolor{rojo}{Método de Fermat}} para factorización de enteros.}
+    \item \textit{Implementa el \textbf{\textcolor{rojo}{algoritmo de factorización $\rho$ de Pollard}}}
+\end{enumerate}
+
+\subsection{\textcolor{rojo}Método de Fermat}
+Para implementar el \textit{\textcolor{rojo}{Método de Fermat}} me he basado en los apuntes de clase. La entrada del algoritmo es un número $n$ y la salida, una tupla con dos valores $(x,y)$ tales que $x^2 - y^2 = (x-y)(x-y) = n$. Este método es muy útil cuando $n$ tiene divisores cercanos a $\frac{n}{2}$ El algoritmo implementado es:
+
+\begin{minted}[linenos, frame=lines, label={Método de Fermat}]{haskell}
+isSquare n = elem n (takeWhile (<=n) [ x*x | x <- [1..]])
+
+metodo_fermat :: (Integral a, Random a) => a -> (a,a)
+metodo_fermat n = (x'+y', x'-y')
+        where
+            x       = ceiling (sqrt (fromIntegral n))
+            c       = x^2 - n
+            (x',y') = metodo_fermat_aux x c n
+
+metodo_fermat_aux :: (Integral a, Random a) => a -> a -> a -> (a,a)
+metodo_fermat_aux x c n
+    | isSquare c = (x, floor (sqrt (fromIntegral c)))
+    | otherwise  = metodo_fermat_aux x' c' n
+            where
+                x' = x+1
+                c' = x'^2 - n
+\end{minted}
+
+En primer lugar se calcula $x = \lceil \sqrt{n} \rceil$ y $c = x^2 - n$. Vamos incrementando $x$ en una unidad mientras $c$ no sea un cuadrado perfecto. Una vez que $c$ es un cuadrado perfecto, devolvemos la tupla $(x + \sqrt{c}, x - \sqrt{c})$.
+
+Para comprobar que $c$ es un cuadrado perfecto uso la función \texttt{isSquare} que comprueba que $x^2$ está en $\mathbb{N}^{\ast}$.
 \end{document}
