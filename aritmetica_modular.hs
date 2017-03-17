@@ -249,17 +249,17 @@ Ejercicio 7
 -- http://stackoverflow.com/questions/16228542/haskell-function-to-test-if-int-is-perfect-square-using-infinite-list#16228629
 isSquare n = elem n (takeWhile (<=n) [ x*x | x <- [1..]])
 
--- usando Jacobi
-metodo_fermat :: (Integral a, Random a) => a -> a
-metodo_fermat n = metodo_fermat_aux x c n
+metodo_fermat :: (Integral a, Random a) => a -> (a,a)
+metodo_fermat n = (x'+y', x'-y')
         where
-            x = ceiling (sqrt n)
-            c = x^2 - n
+            x       = ceiling (sqrt (fromIntegral n))
+            c       = x^2 - n
+            (x',y') = metodo_fermat_aux x c n
 
-metodo_fermat_aux :: (Integral a, Random a) => a -> a -> a -> a
+metodo_fermat_aux :: (Integral a, Random a) => a -> a -> a -> (a,a)
 metodo_fermat_aux x c n
-    | jacobi c n == 1 = fromIntegral $ sqrt (fromIntegral c)
-    | otherwise       = metodo_fermat_aux x' c' n
+    | isSquare c = (x, floor (sqrt (fromIntegral c)))
+    | otherwise  = metodo_fermat_aux x' c' n
             where
                 x' = x+1
                 c' = x'^2 - n
