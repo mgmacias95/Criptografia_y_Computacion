@@ -231,6 +231,7 @@ Ejercicio 7
 * Implementa el algoritmo de factorización de Pollard
 -}
 
+-- Método de Fermat
 -- http://stackoverflow.com/questions/16228542/haskell-function-to-test-if-int-is-perfect-square-using-infinite-list#16228629
 isSquare n = elem n (takeWhile (<=n) [ x*x | x <- [1..]])
 
@@ -248,3 +249,26 @@ metodo_fermat_aux x c n
             where
                 x' = x+1
                 c' = x'^2 - n
+
+-- Algoritmo rho de Pollard
+func :: (Integral a, Random a) => a -> a -> a
+func x n = (x^2 + c) `mod` n
+    where
+        r = unsafePerformIO $ randomIO
+        c = r == 0 || r == -2 ? r+4 :? r
+
+rho :: (Integral a, Random a) => a -> (a -> a -> a) -> a
+rho n f = rho_aux n f x' y
+    where
+        x  = unsafePerformIO (randomRIO (0, n-1))
+        x' = f x n 
+        y  = f x' n
+
+rho_aux :: (Integral a, Random a) => a -> (a -> a -> a) -> a -> a -> a
+rho_aux n f x y
+    | d /= 1    = d
+    | otherwise = rho_aux n f x' y'
+        where
+            (d,_,_) = extended_euclides (y-x) n
+            x'      = f x n
+            y'      = f x' n
