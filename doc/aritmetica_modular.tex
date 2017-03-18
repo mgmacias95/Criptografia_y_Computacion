@@ -592,4 +592,44 @@ metodo_fermat_aux x c n
 En primer lugar se calcula $x = \lceil \sqrt{n} \rceil$ y $c = x^2 - n$. Vamos incrementando $x$ en una unidad mientras $c$ no sea un cuadrado perfecto. Una vez que $c$ es un cuadrado perfecto, devolvemos la tupla $(x + \sqrt{c}, x - \sqrt{c})$.
 
 Para comprobar que $c$ es un cuadrado perfecto uso la función \texttt{isSquare} que comprueba que $x^2$ está en $\mathbb{N}^{\ast}$.
+
+\subsection{\textcolor{rojo}Algoritmo $\rho$ de Pollard}
+El \textit{\textcolor{rojo}{algoritmo $\rho$ de Pollard}} recibe dos entradas: un entero $n$ y una función $f$. En la práctica, esta función suele ser
+
+\begin{displaymath}
+    f(x) = (x^2 + c) \bmod n \qquad\ c \in_\mathcal{R} \mathbb{Z} - \{0, -2\}
+\end{displaymath}
+
+aunque yo he decidido pasarle al algoritmo una función como parámetro para hacerlo más flexible.
+
+El funcionamiento del algoritmo es simple: se llama de forma recursiva calculando los $x$ e $y$ correspondientes en cada iteración hasta que $d = mcd(y - x, n) \neq 1$. Así, se calcula uno de los factores y el otro, es simplemente divir $n$ entre el factor encontrado.
+
+Se supone que si el factor encontrado es igual a $n$, la función debe reiniciarse. Yo he preferido lanzar un error y solicitar al usuario que lance la función de nuevo. Así, no entrará en un bucle infinito.
+
+\begin{minted}[linenos, frame=lines, label={Algoritmo rho de Pollard}]{haskell}
+func :: (Integral a, Random a) => a -> a -> a
+func x n = (x^2 + c) `mod` n
+    where
+        r = unsafePerformIO $ randomIO
+        c = r == 0 || r == -2 ? r+4 :? r
+
+rho :: (Integral a, Random a) => a -> (a -> a -> a) -> (a, a)
+rho n f
+    | r == n   = error "No se ha encontrado factor. Vuelve a lanzar la función."
+    |otherwise = (r, n `div` r)
+            where
+                x  = unsafePerformIO (randomRIO (0, n-1))
+                x' = f x n 
+                y  = f x' n
+                r  = rho_aux n f x' y
+
+rho_aux :: (Integral a, Random a) => a -> (a -> a -> a) -> a -> a -> a
+rho_aux n f x y
+    | d /= 1    = d
+    | otherwise = rho_aux n f x' y'
+        where
+            (d,_,_) = extended_euclides (y-x) n
+            x'      = f x n
+            y'      = f x' n
+\end{minted}
 \end{document}
