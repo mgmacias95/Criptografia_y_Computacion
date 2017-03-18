@@ -290,30 +290,10 @@ shanks a c p
     \item Sea $a$ un entero que es residuo cuadrático módulo $p$ y $q$. Usa el \textbf{\textcolor{rojo}{teorema chino de los restos}} para calcular todas las raíces cuadradas de $a \bmod n$ a partir de las raíces cuadraas de $a$ módulo $p$ y $q$.
 \end{enumerate}}
 
-\subsection{\textcolor{rojo}Descomposición en factores primos}
-Para obtener los factores primos de un número, he implementado un método de ``fuerza bruta'' que consiste en, en primer lugar obtener los divisores primos de un número (usando la función \texttt{filter} y una lista con los primeros primos) y, después, implementar la ``cuenta de la vieja'' diviendo el número por cada factor: empezamos diviendo entre el primero, hasta obtener un resto distinto de cero, después, seguiríamos con el siguiente hasta llegar a un conciente 1.
-
-\begin{minted}[linenos, frame=lines, label={Descomposición en factores primos}]{haskell}
-descomposicion_primos :: (Integral a, Random a) => a -> [a]
-descomposicion_primos n 
-    | miller_rabin n = [n]
-    | otherwise      = prime_factor n p
-        where
-            lp = filter miller_rabin [2..n]
-            p  = filter (\x -> n `mod` x == 0) lp
-
-prime_factor :: (Integral a) => a -> [a] -> [a]
-prime_factor 1 _      = []
-prime_factor n (x:xs) = x : prime_factor d l
-        where
-            d = n `div` x
-            l = filter (\x -> d `mod` x == 0) (x:xs)
-\end{minted}
-
-He preferido usar este método en vez de descomponer un número en $2^u \cdot s$ debido a que cuando el $2$ no era raíz del número $n$, mi implementación del símbolo de Jacobi entraba en un ciclo infinito, ya que el número realmente no se descomponía ($n = 2^0 \cdot n$). Soy consciente de que esta aproximación puede ser bastante lenta pero para mí ha sido lo más sencillo de implementar.
-
 \subsection{\textcolor{rojo}Símbolo de Jacobi}
-El \textit{\textcolor{rojo}{símbolo de Jacobi}} es una herramienta para el cálculo del \textit{\textcolor{rojo}{símbolo de Legendre}}, las propiedades de este último se extienden al símbolo de Jacobi. Estas propiedades, y sus respectivas implementaciones en Haskell, son:
+El \textit{\textcolor{rojo}{símbolo de Jacobi}} es una herramienta para el cálculo del \textit{\textcolor{rojo}{símbolo de Legendre}}, las propiedades de este último se extienden al símbolo de Jacobi. Una de las propiedades es que el símbolo de Jacobi de un número es igual a la multiplicación de los símbolos de Jacobi de su descomposición en factores primos. Debido a que esto es muy costoso computacionalmente, en la práctica se descompone el número en $2^u \cdot s$.
+
+Estas propiedades, y sus respectivas implementaciones en Haskell, son:
 
 \begin{enumerate}[1.]
 \item 
@@ -337,9 +317,10 @@ El \textit{\textcolor{rojo}{símbolo de Jacobi}} es una herramienta para el cál
 \end{equation*}
 
 \begin{minted}{haskell}
-| not (miller_rabin a) = foldl1 (*) $ map (\x -> jacobi_impar x n) primos
-        where
-              primos = descomposicion_primos a
+| even a = (jacobi_impar s n) * (foldl1 (*) $ map (\x -> jacobi_impar 2 n) [1..u])
+    where
+                (u,s) = descomposicion_2us a 0
+
 \end{minted}
 
 \item
@@ -419,25 +400,26 @@ El \textit{\textcolor{rojo}{símbolo de Jacobi}} es una herramienta para el cál
 La implementación del algoritmo es:
 
 \begin{minted}[linenos, frame=lines, label={jacobi}]{haskell}
-jacobi :: (Integral a, Random a) => a -> a -> a
+jacobi :: (Integral a) => a -> a -> a
 jacobi a n
     | even n    = error "n debe ser impar"
     | otherwise = jacobi_impar a n
 
-jacobi_impar :: (Integral a, Random a) => a -> a -> a
+jacobi_impar :: (Integral a) => a -> a -> a
 jacobi_impar a n
-    | a > n                   = jacobi_impar (a `mod` n) n
-    | not (miller_rabin a)    = foldl1 (*) $ map (\x -> jacobi_impar x n) primos
-    | a == 1                  = 1
-    | a == -1                 = (-1)^((n - 1) `div` 2)
-    | a == 2                  = (-1)^((n^2 - 1) `div` 8)
-    | impar && cond           = -(jacobi_impar n a)
-    | impar                   = jacobi_impar n a
-    | otherwise               = exponential_zn a ((n-1) `div` 2) n
+    | a > n         = jacobi_impar (a `mod` n) n
+    | a == 1        = 1
+    | a == -1       = (-1)^((n - 1) `div` 2)
+    | a == 2        = (-1)^((n^2 - 1) `div` 8)
+    | impar && cond = -(jacobi_impar n a)
+    | impar         = jacobi_impar n a
+    | even a        = (jacobi_impar s n) * (foldl1 (*) $ map (\x -> jacobi_impar 2 n) [1..u])
+    | otherwise     = exponential_zn a ((n-1) `div` 2) n
             where
-                primos    = descomposicion_primos a
+                (u,s)     = descomposicion_2us a 0
                 impar     = odd a && odd n 
                 cond      = (a-3) `mod` 4 == 0 && (n-3) `mod` 4 == 0
+
 \end{minted}
 
 \subsection{\textcolor{rojo}Cálculo de cuadrados}

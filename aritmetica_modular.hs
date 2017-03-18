@@ -155,42 +155,6 @@ Sea n=pq, con p y q enteros y primos relativos
       los restos para calcular todas las raíces cuadradas de a mod n a partir de las raíces
       cuadradas de a módulo p y q.
 -}
-descomposicion_primos :: (Integral a, Random a) => a -> [a]
-descomposicion_primos n 
-    | miller_rabin n = [n]
-    | otherwise      = prime_factor n p
-        where
-            lp = filter miller_rabin [2..n]
-            p  = filter (\x -> n `mod` x == 0) lp
-
-prime_factor :: (Integral a) => a -> [a] -> [a]
-prime_factor 1 _      = []
-prime_factor n (x:xs) = x : prime_factor d l
-        where
-            d = n `div` x
-            l = filter (\x -> d `mod` x == 0) (x:xs)
-
--- simbolo de jacobi LENTO
-jacobi_lento :: (Integral a, Random a) => a -> a -> a
-jacobi_lento a n
-    | even n    = error "n debe ser impar"
-    | otherwise = jacobi_impar_lento a n
-
-jacobi_impar_lento :: (Integral a, Random a) => a -> a -> a
-jacobi_impar_lento a n
-    | a > n                   = jacobi_impar_lento (a `mod` n) n
-    | not (miller_rabin a)    = foldl1 (*) $ map (\x -> jacobi_impar_lento x n) primos
-    | a == 1                  = 1
-    | a == -1                 = (-1)^((n - 1) `div` 2)
-    | a == 2                  = (-1)^((n^2 - 1) `div` 8)
-    | impar && cond           = -(jacobi_impar_lento n a)
-    | impar                   = jacobi_impar_lento n a
-    | otherwise               = exponential_zn a ((n-1) `div` 2) n
-            where
-                primos    = descomposicion_primos a
-                impar     = odd a && odd n 
-                cond      = (a-3) `mod` 4 == 0 && (n-3) `mod` 4 == 0
-
 -- simbolo de jacobi
 jacobi :: (Integral a) => a -> a -> a
 jacobi a n
