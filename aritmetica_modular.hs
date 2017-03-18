@@ -257,12 +257,13 @@ func x n = (x^2 + c) `mod` n
         r = unsafePerformIO $ randomIO
         c = r == 0 || r == -2 ? r+4 :? r
 
-rho :: (Integral a, Random a) => a -> (a -> a -> a) -> a
-rho n f = rho_aux n f x' y
+rho :: (Integral a, Random a) => a -> (a -> a -> a) -> (a, a)
+rho n f = (r, n `div` r)
     where
         x  = unsafePerformIO (randomRIO (0, n-1))
         x' = f x n 
         y  = f x' n
+        r  = rho_aux n f x' y
 
 rho_aux :: (Integral a, Random a) => a -> (a -> a -> a) -> a -> a -> a
 rho_aux n f x y
