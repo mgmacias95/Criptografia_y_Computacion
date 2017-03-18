@@ -170,24 +170,45 @@ prime_factor n (x:xs) = x : prime_factor d l
             d = n `div` x
             l = filter (\x -> d `mod` x == 0) (x:xs)
 
+-- simbolo de jacobi LENTO
+jacobi_lento :: (Integral a, Random a) => a -> a -> a
+jacobi_lento a n
+    | even n    = error "n debe ser impar"
+    | otherwise = jacobi_impar_lento a n
+
+jacobi_impar_lento :: (Integral a, Random a) => a -> a -> a
+jacobi_impar_lento a n
+    | a > n                   = jacobi_impar_lento (a `mod` n) n
+    | not (miller_rabin a)    = foldl1 (*) $ map (\x -> jacobi_impar_lento x n) primos
+    | a == 1                  = 1
+    | a == -1                 = (-1)^((n - 1) `div` 2)
+    | a == 2                  = (-1)^((n^2 - 1) `div` 8)
+    | impar && cond           = -(jacobi_impar_lento n a)
+    | impar                   = jacobi_impar_lento n a
+    | otherwise               = exponential_zn a ((n-1) `div` 2) n
+            where
+                primos    = descomposicion_primos a
+                impar     = odd a && odd n 
+                cond      = (a-3) `mod` 4 == 0 && (n-3) `mod` 4 == 0
+
 -- simbolo de jacobi
-jacobi :: (Integral a, Random a) => a -> a -> a
+jacobi :: (Integral a) => a -> a -> a
 jacobi a n
     | even n    = error "n debe ser impar"
     | otherwise = jacobi_impar a n
 
-jacobi_impar :: (Integral a, Random a) => a -> a -> a
+jacobi_impar :: (Integral a) => a -> a -> a
 jacobi_impar a n
-    | a > n                   = jacobi_impar (a `mod` n) n
-    | not (miller_rabin a)    = foldl1 (*) $ map (\x -> jacobi_impar x n) primos
-    | a == 1                  = 1
-    | a == -1                 = (-1)^((n - 1) `div` 2)
-    | a == 2                  = (-1)^((n^2 - 1) `div` 8)
-    | impar && cond           = -(jacobi_impar n a)
-    | impar                   = jacobi_impar n a
-    | otherwise               = exponential_zn a ((n-1) `div` 2) n
+    | a > n         = jacobi_impar (a `mod` n) n
+    | a == 1        = 1
+    | a == -1       = (-1)^((n - 1) `div` 2)
+    | a == 2        = (-1)^((n^2 - 1) `div` 8)
+    | impar && cond = -(jacobi_impar n a)
+    | impar         = jacobi_impar n a
+    | even a        = (jacobi_impar s n) * (foldl1 (*) $ map (\x -> jacobi_impar 2 n) [1..u])
+    | otherwise     = exponential_zn a ((n-1) `div` 2) n
             where
-                primos    = descomposicion_primos a
+                (u,s)     = descomposicion_2us a 0
                 impar     = odd a && odd n 
                 cond      = (a-3) `mod` 4 == 0 && (n-3) `mod` 4 == 0
 
