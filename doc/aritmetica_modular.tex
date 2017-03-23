@@ -9,6 +9,7 @@
 \usepackage{colortbl}
 \usepackage{minted}
 \usepackage[left=3cm, right=3cm]{geometry}
+\usepackage{cancel}
 
 \usepackage[bookmarks=true,
             bookmarksnumbered=false, % true means bookmarks in
@@ -289,33 +290,10 @@ shanks a c p
     \item Sea $a$ un entero que es residuo cuadrático módulo $p$ y $q$. Usa el \textbf{\textcolor{rojo}{teorema chino de los restos}} para calcular todas las raíces cuadradas de $a \bmod n$ a partir de las raíces cuadraas de $a$ módulo $p$ y $q$.
 \end{enumerate}}
 
-\subsection{\textcolor{rojo}Descomposición en factores primos}
-Para obtener los factores primos de un número, he implementado un método de ``fuerza bruta'' que consiste en, en primer lugar obtener los divisores primos de un número (usando la función \texttt{filter} y una lista con los primeros primos) y, después, implementar la ``cuenta de la vieja'' diviendo el número por cada factor: empezamos diviendo entre el primero, hasta obtener un resto distinto de cero, después, seguiríamos con el siguiente hasta llegar a un conciente 1.
-
-\begin{minted}[linenos, frame=lines, label={Descomposición en factores primos}]{haskell}
-descomposicion_primos :: (Integral a, Random a) => a -> [a]
-descomposicion_primos n 
-    | miller_rabin n = [n]
-    | otherwise      = prime_factor n p
-        where
-            lp = [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,
-                  83,89,97,101,103,107,109,113,127,131,137,139,149,151,157,163,
-                  167,173,179,181,191,193,197,199,211,223,227,229,233,239,241,251,
-                  257,263,269,271,277,281]
-            p  = filter (\x -> n `mod` x == 0) lp
-
-prime_factor :: (Integral a) => a -> [a] -> [a]
-prime_factor 1 _      = []
-prime_factor n (x:xs) = x : prime_factor d l
-        where
-            d = n `div` x
-            l = filter (\x -> d `mod` x == 0) (x:xs)
-\end{minted}
-
-He preferido usar este método en vez de descomponer un número en $2^u \cdot s$ debido a que cuando el $2$ no era raíz del número $n$, mi implementación del símbolo de Jacobi entraba en un ciclo infinito, ya que el número realmente no se descomponía ($n = 2^0 \cdot n$). Soy consciente de que puede no funcionar con números grandes cuyos divisores primos no estén en la lista pero la solución a eso sería implementar métodos más avanzados para saber los divisores primos de un número o añadir más números primos a la lista.
-
 \subsection{\textcolor{rojo}Símbolo de Jacobi}
-El \textit{\textcolor{rojo}{símbolo de Jacobi}} es una herramienta para el cálculo del \textit{\textcolor{rojo}{símbolo de Legendre}}, las propiedades de este último se extienden al símbolo de Jacobi. Estas propiedades, y sus respectivas implementaciones en Haskell, son:
+El \textit{\textcolor{rojo}{símbolo de Jacobi}} es una herramienta para el cálculo del \textit{\textcolor{rojo}{símbolo de Legendre}}, las propiedades de este último se extienden al símbolo de Jacobi. Una de las propiedades es que el símbolo de Jacobi de un número es igual a la multiplicación de los símbolos de Jacobi de su descomposición en factores primos. Debido a que esto es muy costoso computacionalmente, en la práctica se descompone el número en $2^u \cdot s$.
+
+Estas propiedades, y sus respectivas implementaciones en Haskell, son:
 
 \begin{enumerate}[1.]
 \item 
@@ -339,9 +317,10 @@ El \textit{\textcolor{rojo}{símbolo de Jacobi}} es una herramienta para el cál
 \end{equation*}
 
 \begin{minted}{haskell}
-| not (miller_rabin a) = foldl1 (*) $ map (\x -> jacobi_impar x n) primos
-        where
-              primos = descomposicion_primos a
+| even a = (jacobi_impar s n) * (jacobi_impar 2 n)
+    where
+                (u,s) = descomposicion_2us a 0
+
 \end{minted}
 
 \item
@@ -433,45 +412,47 @@ El \textit{\textcolor{rojo}{símbolo de Jacobi}} es una herramienta para el cál
 La implementación del algoritmo es:
 
 \begin{minted}[linenos, frame=lines, label={jacobi}]{haskell}
-jacobi :: (Integral a, Random a) => a -> a -> a
+jacobi :: (Integral a) => a -> a -> a
 jacobi a n
     | even n    = error "n debe ser impar"
     | otherwise = jacobi_impar a n
 
-jacobi_impar :: (Integral a, Random a) => a -> a -> a
+jacobi_impar :: (Integral a) => a -> a -> a
 jacobi_impar a n
-    | a > n                   = jacobi_impar (a `mod` n) n
-    | a == 0                  = 0
-    | not (miller_rabin a)    = foldl1 (*) $ map (\x -> jacobi_impar x n) primos
-    | a == 1                  = 1
-    | a == -1                 = (-1)^((n - 1) `div` 2)
-    | a == 2                  = (-1)^((n^2 - 1) `div` 8)
-    | impar && cond           = -(jacobi_impar n a)
-    | impar                   = jacobi_impar n a
-    | otherwise               = exponential_zn a ((n-1) `div` 2) n
+    | a > n         = jacobi_impar (a `mod` n) n
+    | a == 1        = 1
+    | a == -1       = (-1)^((n - 1) `div` 2)
+    | a == 2        = (-1)^((n^2 - 1) `div` 8)
+    | impar && cond = -(jacobi_impar n a)
+    | impar         = jacobi_impar n a
+    | even a        = (jacobi_impar s n) * (jacobi_impar 2 n)
+    | otherwise     = exponential_zn a ((n-1) `div` 2) n
             where
-                primos    = descomposicion_primos a
+                (u,s)     = descomposicion_2us a 0
                 impar     = odd a && odd n 
                 cond      = (a-3) `mod` 4 == 0 && (n-3) `mod` 4 == 0
+
 \end{minted}
 
-\subsection{\textcolor{rojo}Cálculo de raíces cuadradas}
-Con el \textit{\textcolor{rojo}{símbolo de Jacobi}} ya podemos saber, dado un primo $p$ y un número $a$, si $a$ tiene raíz cuadrada. Ahora, vamos a avanzar un paso más alla y vamos a calcular dicha raíz. 
+\subsection{\textcolor{rojo}Cálculo de cuadrados}
+Con el \textit{\textcolor{rojo}{símbolo de Jacobi}} ya podemos saber, dado un primo $p$ y un número $a$, si $a$ tiene cuadrado módulo $p$. Ahora, vamos a avanzar un paso más alla y vamos a calcular dicho cuadrado, $r$, tal que $r^2 = a \bmod p$. Sólo es necesario calcular uno de los cuadrados debido a que el otro es simplemente su \textit{\textcolor{rojo}{complementario}}.
 
 Para calcular dicha raíz he implementado el algoritmo de los apuntes de clase.
 
 \begin{minted}[linenos, frame=lines, label={Cálculo de raíces cuadradas}]{haskell}
-cuadrados :: (Integral a, Random a) => a -> a -> a
+cuadrados :: (Integral a, Random a) => a -> a -> [a]
 cuadrados a p
     | not $ miller_rabin p = error "p debe ser primo"
     | jacobi a p /= 1      = error "(a/p) /= 1"
-    | otherwise            = cuadrados_ok a p n u s b i
+    | otherwise            = [raiz1, raiz2]
             where
                 n     = (fromIntegral $ fromJust $ elemIndex (-1) $ 
                         map (\x -> jacobi x p) [2..p-1]) + 2
                 (u,s) = descomposicion_2us (p-1) 0
                 b     = exponential_zn n s p
                 i     = inverse a p
+                raiz1 = cuadrados_ok a p n u s b i
+                raiz2 = p - raiz1
 
 cuadrados_aux :: (Integral a, Random a) => a -> a -> a -> a -> a -> [a] -> a
 cuadrados_aux _ _ r _ _ []     = r
@@ -490,4 +471,177 @@ cuadrados_ok a p n u s b i = rlist
             rlist = cuadrados_aux i b r u p [0..u-2]
 \end{minted}
 
+\subsection{\textcolor{rojo}Teorema chino del resto}
+Dado el sistema de dos congruencias de la \hyperref[eqinicial]{Ecuación \ref*{eqinicial}}
+
+\begin{equation}
+\label{eqinicial}
+\Bigg\{ \begin{matrix}
+    x & \equiv & a_1 \bmod p\\
+    x & \equiv & a_2 \bmod q
+\end{matrix}
+\end{equation}
+
+Debemos resolverlo despejando $x$ en la primera ecuación (\hyperref[eqdespx]{Ecuación \ref*{eqdespx}}) y sustituyendo en la segunda (\hyperref[eqsusx]{Ecuación \ref*{eqsusx}}).
+
+\begin{equation}
+\label{eqdespx}
+    x = a_1 + p \cdot l
+\end{equation}
+
+\begin{equation}
+\label{eqsusx}
+    a_1 + p \cdot l \equiv a_2 \bmod q
+\end{equation}
+
+
+Una vez hemos sustituido, debemos despejar $l$ para poder sustituir en la \hyperref[eqinicial]{Ecuación \ref*{eqinicial}}.
+
+\begin{equation}
+\label{eqpdesl}
+\begin{matrix}
+p \cdot l & \equiv & (a_2 - a_1) \bmod q \\
+l & \equiv & (a_2 - a_1) \cdot p^{-1} \bmod q\\
+l & = & (a_2 - a_1) \cdot p^{-1} + q \cdot s
+\end{matrix}     
+\end{equation}
+
+Al sustituir $l$ en la \hyperref[eqinicial]{Ecuación \ref*{eqinicial}} obtendríamos
+
+\begin{equation}
+\label{sustl}
+\begin{matrix}
+x & = & a_1 + p \cdot ((a_2 - a_1) \cdot \underbrace{p^{-1}}_{\bmod q} +\; q \cdot s)\\
+x & = & a_1 + (a_2 - a_1) \cdot p \cdot \underbrace{p^{-1}}_{\bmod q} +\; \cancel{p \cdot q \cdot s}
+\end{matrix}
+\end{equation}
+
+Al ser todos los valores restantes de la \hyperref[sustl]{Ecuación \ref*{sustl}} conocidos, ya tendríamos el resultado del \textcolor{rojo}{\textit{Teorema Chino del Resto}}.
+
+La implementación en Haskell es:
+
+\begin{minted}[linenos, frame=lines, label={Teorema Chino del Resto}]{haskell}
+teorema_chino_resto :: (Integral a, Random a) => a -> a -> a -> a -> a
+teorema_chino_resto a1 a2 p q = (a1 + p*l) `mod` (p*q)
+        where
+            pi = inverse p q
+            l  = (a2 - a1) * pi
+\end{minted}
+
+Nótese que las congruencias no se normalizan. No es necesario ya que esta función ya recibe los elementos de la congruencia normalizados.
+
+\subsection{\textcolor{rojo}Cálculo de Raíces Cuadradas}
+Una vez tenemos implementados todas las herramientas necesarias para resolver este ejercicio, lo único que debemos hacer es unirlas para dar las cuatro raíces.
+
+\begin{minted}[linenos, frame=lines, label={Calculando Raíces Cuadradas}]{haskell}
+raices_cuadradas :: (Integral a, Random a) => a -> a -> a -> (a,a,a,a)
+raices_cuadradas a p q = (r1, r2, r3, r4)
+        where
+            (a1, a3) = cuadrados a p
+            (a2, a4) = cuadrados a q
+            n        = p*q
+            r1       = teorema_chino_resto a1 a2 p q
+            r2       = n - r1
+            r3       = teorema_chino_resto a1 a4 p q
+            r4       = n - r3
+
+\end{minted}
+
+Esta función recibe como entrada tres números: $a$, $p$ y $q$. En primer lugar, debemos calcular cuatro números, $a_1$, $a_2$, $a_3$ y $a_4$, llamando a la función \texttt{cuadrados}.
+
+\begin{displaymath}
+\begin{matrix}
+    \sqrt{a} \in \mathbb{Z}_p & = & \{a_1, a_3 \} \\
+    \sqrt{a} \in \mathbb{Z}_q & = & \{a_2, a_4 \}
+\end{matrix}
+\end{displaymath}
+
+Una vez calculados, sólo debemos hacer dos llamadas al \textit{\textcolor{rojo}{Teorema Chino del Resto}}:
+
+\begin{displaymath}
+\Bigg\{ \begin{matrix}
+r_1 & \equiv & a_1 \bmod p \\
+r_1 & \equiv & a_2 \bmod q 
+\end{matrix}
+\qquad\
+\Bigg\{ 
+\begin{matrix}
+r_3 & \equiv & a_1 \bmod p \\
+r_3 & \equiv & a_4 \bmod q 
+\end{matrix}
+\end{displaymath}
+
+Las otras dos raíces restantes son los complementarios de estas dos calculadas.
+
+\section{\textcolor{rojo}Ejercicio 7}
+\begin{enumerate}[\color{rojo}{$\bullet$}]
+    \item \textit{Implementa el \textbf{\textcolor{rojo}{Método de Fermat}} para factorización de enteros.}
+    \item \textit{Implementa el \textbf{\textcolor{rojo}{algoritmo de factorización $\rho$ de Pollard}}}
+\end{enumerate}
+
+\subsection{\textcolor{rojo}Método de Fermat}
+Para implementar el \textit{\textcolor{rojo}{Método de Fermat}} me he basado en los apuntes de clase. La entrada del algoritmo es un número $n$ y la salida, una tupla con dos valores $(x,y)$ tales que $x^2 - y^2 = (x-y)(x-y) = n$. Este método es muy útil cuando $n$ tiene divisores cercanos a $\frac{n}{2}$ El algoritmo implementado es:
+
+\begin{minted}[linenos, frame=lines, label={Método de Fermat}]{haskell}
+isSquare n = elem n (takeWhile (<=n) [ x*x | x <- [1..]])
+
+metodo_fermat :: (Integral a, Random a) => a -> (a,a)
+metodo_fermat n = (x'+y', x'-y')
+        where
+            x       = ceiling (sqrt (fromIntegral n))
+            c       = x^2 - n
+            (x',y') = metodo_fermat_aux x c n
+
+metodo_fermat_aux :: (Integral a, Random a) => a -> a -> a -> (a,a)
+metodo_fermat_aux x c n
+    | isSquare c = (x, floor (sqrt (fromIntegral c)))
+    | otherwise  = metodo_fermat_aux x' c' n
+            where
+                x' = x+1
+                c' = x'^2 - n
+\end{minted}
+
+En primer lugar se calcula $x = \lceil \sqrt{n} \rceil$ y $c = x^2 - n$. Vamos incrementando $x$ en una unidad mientras $c$ no sea un cuadrado perfecto. Una vez que $c$ es un cuadrado perfecto, devolvemos la tupla $(x + \sqrt{c}, x - \sqrt{c})$.
+
+Para comprobar que $c$ es un cuadrado perfecto uso la función \texttt{isSquare} que comprueba que $x^2$ está en $\mathbb{N}^{\ast}$.
+
+\subsection{\textcolor{rojo}Algoritmo $\rho$ de Pollard}
+El \textit{\textcolor{rojo}{algoritmo $\rho$ de Pollard}} recibe dos entradas: un entero $n$ y una función $f$. En la práctica, esta función suele ser
+
+\begin{displaymath}
+    f(x) = (x^2 + c) \bmod n \qquad\ c \in_\mathcal{R} \mathbb{Z} - \{0, -2\}
+\end{displaymath}
+
+aunque yo he decidido pasarle al algoritmo una función como parámetro para hacerlo más flexible.
+
+El funcionamiento del algoritmo es simple: se llama de forma recursiva calculando los $x$ e $y$ correspondientes en cada iteración hasta que $d = mcd(y - x, n) \neq 1$. Así, se calcula uno de los factores y el otro, es simplemente divir $n$ entre el factor encontrado.
+
+Se supone que si el factor encontrado es igual a $n$, la función debe reiniciarse. Yo he preferido lanzar un error y solicitar al usuario que lance la función de nuevo. Así, no entrará en un bucle infinito.
+
+\begin{minted}[linenos, frame=lines, label={Algoritmo rho de Pollard}]{haskell}
+func :: (Integral a, Random a) => a -> a -> a
+func x n = (x^2 + c) `mod` n
+    where
+        r = unsafePerformIO $ randomIO
+        c = r == 0 || r == -2 ? r+4 :? r
+
+rho :: (Integral a, Random a) => a -> (a -> a -> a) -> (a, a)
+rho n f
+    | r == n   = error "No se ha encontrado factor. Vuelve a lanzar la función."
+    |otherwise = (r, n `div` r)
+            where
+                x  = unsafePerformIO (randomRIO (0, n-1))
+                x' = f x n 
+                y  = f x' n
+                r  = rho_aux n f x' y
+
+rho_aux :: (Integral a, Random a) => a -> (a -> a -> a) -> a -> a -> a
+rho_aux n f x y
+    | d /= 1    = d
+    | otherwise = rho_aux n f x' y'
+        where
+            (d,_,_) = extended_euclides (y-x) n
+            x'      = f x n
+            y'      = f x' n
+\end{minted}
 \end{document}
