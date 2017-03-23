@@ -185,6 +185,7 @@ jacobi a n
 jacobi_impar :: (Integral a, Random a) => a -> a -> a
 jacobi_impar a n
     | a > n                   = jacobi_impar (a `mod` n) n
+    | a == 0                  = 0
     | not (miller_rabin a)    = foldl1 (*) $ map (\x -> jacobi_impar x n) primos
     | a == 1                  = 1
     | a == -1                 = (-1)^((n - 1) `div` 2)
@@ -218,7 +219,7 @@ cuadrados_aux i b r u p (x:xs) = cuadrados_aux i (exponential_zn b 2 p) rb u p x
             rb = d == (p-1) ? (r*b `mod` p) :? r
 
 cuadrados_ok :: (Integral a, Random a) => a -> a -> a -> a -> a -> a -> a -> a
-cuadrados_ok a p _ 1 _ _ _ = a^((p+1) `div` 4)
+cuadrados_ok a p _ 1 _ _ _ = exponential_zn a ((p+1) `div` 4) p
 cuadrados_ok a p n u s b i = rlist
         where
             r     = exponential_zn a ((s+1) `div` 2) p
