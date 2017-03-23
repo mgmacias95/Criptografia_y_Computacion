@@ -317,7 +317,7 @@ Estas propiedades, y sus respectivas implementaciones en Haskell, son:
 \end{equation*}
 
 \begin{minted}{haskell}
-| even a = (jacobi_impar s n) * (foldl1 (*) $ map (\x -> jacobi_impar 2 n) [1..u])
+| even a = (jacobi_impar s n) * (jacobi_impar 2 n)
     where
                 (u,s) = descomposicion_2us a 0
 
