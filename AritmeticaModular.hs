@@ -173,7 +173,7 @@ module AritmeticaModular (extended_euclides, inverse, exponential_zn, descomposi
         | a == 2        = (-1)^((n^2 - 1) `div` 8)
         | impar && cond = -(jacobi_impar n a)
         | impar         = jacobi_impar n a
-        | even a        = (jacobi_impar s n) * (jacobi_impar 2 n)
+        | even a        = (jacobi_impar s n) * (jacobi_impar 2 n)^u
         | otherwise     = exponential_zn a ((n-1) `div` 2) n
                 where
                     (u,s)     = descomposicion_2us a 0
