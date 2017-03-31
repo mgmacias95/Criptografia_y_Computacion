@@ -138,12 +138,10 @@ module AritmeticaModular (extended_euclides, inverse, exponential_zn, descomposi
         | otherwise            = k
             where
                 s    = ceiling (sqrt (fromIntegral p-1))
-                l1   = replicate (fromIntegral s) a
-                pa   = zipWith (\x y -> exponential_zn x y p) l1 [0..(fromIntegral s)]
-                tabS = zipWith (\x y -> x * y `mod` p) pa (replicate (fromIntegral s) c)
+                pa   = map (\x -> exponential_zn a x p) [0..(fromIntegral s)]
+                tabS = map (\x -> x * c `mod` p) pa
                 as   = exponential_zn a (fromIntegral s) p
-                asl  = (replicate (fromIntegral s) as)
-                tabT = zipWith (\x y -> exponential_zn x y p) asl [1..(fromIntegral s)]
+                tabT = map (\x -> exponential_zn as x p) [1..(fromIntegral s)]
                 i    = intersect tabS tabT
                 indx = map (\x -> getIndexTwoLists x tabT tabS) i
                 k    = map (\x -> (fst x)*s - (snd x)) indx
