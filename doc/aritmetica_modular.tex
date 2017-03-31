@@ -263,11 +263,11 @@ indx = map (\x -> getIndexTwoLists x tabT tabS) i
 k    = map (\x -> (fst x)*s - (snd x)) indx
 \end{minted}
 
-Todos estos pasos están reflejados en la función \texttt{shanks} que he desarrollado:
+Todos estos pasos están reflejados en la función \texttt{baby_s_giant_s} que he desarrollado:
 
-\begin{minted}[linenos, frame=lines, label={shanks}]{haskell}
-shanks :: (Integral a, Random a) => a -> a -> a -> [a]
-shanks a c p 
+\begin{minted}[linenos, frame=lines, label={baby_s_giant_s}]{haskell}
+baby_s_giant_s :: (Integral a, Random a) => a -> a -> a -> [a]
+baby_s_giant_s a c p 
     | not $ miller_rabin p = error "p debe ser primo"
     | otherwise            = k
         where

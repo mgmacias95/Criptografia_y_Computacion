@@ -1,5 +1,5 @@
 module AritmeticaModular (extended_euclides, inverse, exponential_zn, descomposicion_2us,
-                          miller_rabin, shanks, raices_cuadradas, metodo_fermat,
+                          miller_rabin, baby_s_giant_s, raices_cuadradas, metodo_fermat,
                           rho) where
     
     import System.Random -- instalar con cabal install random
@@ -132,8 +132,8 @@ module AritmeticaModular (extended_euclides, inverse, exponential_zn, descomposi
                     it = (fromIntegral (fromJust (elemIndex i t)))
                     ir = (fromIntegral (fromJust (elemIndex i r)))
 
-    shanks :: (Integral a, Random a) => a -> a -> a -> [a]
-    shanks a c p 
+    baby_s_giant_s :: (Integral a, Random a) => a -> a -> a -> [a]
+    baby_s_giant_s a c p 
         | not $ miller_rabin p = error "p debe ser primo"
         | otherwise            = k
             where

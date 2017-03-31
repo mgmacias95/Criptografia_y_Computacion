@@ -145,3 +145,7 @@ sympy-plots-for-*.tex/
 *.bak
 *.sav
 
+# Criterion
+*.html
+
+**/bin
