@@ -4,7 +4,7 @@ module Main (main) where
     import System.Random
     import AritmeticaModular
 
-    shanks_list :: (Integral a, Random a) => (a, a, a) -> [a]
+    shanks_list :: (Integral a, Random a) => (a, a, a) -> a
     shanks_list (a,c,p) = baby_s_giant_s a c p
 
     -- Our benchmark harness.

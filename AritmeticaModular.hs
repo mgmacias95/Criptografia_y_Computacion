@@ -126,26 +126,28 @@ module AritmeticaModular (extended_euclides, inverse, exponential_zn, descomposi
     Implementa el algoritmo paso enano-paso gigante para el cálculo de logaritmos
     discretos en Zp.
     -}
-    getIndexTwoLists :: Integral a => a -> [a] -> [a] -> (a,a)
-    getIndexTwoLists i t r = (it+1, ir)
-                where
-                    it = (fromIntegral (fromJust (elemIndex i t)))
-                    ir = (fromIntegral (fromJust (elemIndex i r)))
-
-    baby_s_giant_s :: (Integral a, Random a) => a -> a -> a -> [a]
-    baby_s_giant_s a c p 
-        | not $ miller_rabin p = error "p debe ser primo"
-        | otherwise            = k
+    baby_step :: (Integral a, Random a) => a -> a -> a -> a -> [a]
+    baby_step a c p s = tabS
             where
-                s    = ceiling (sqrt (fromIntegral p-1))
                 pa   = map (\x -> exponential_zn a x p) [0..(fromIntegral s)]
                 tabS = map (\x -> x * c `mod` p) pa
-                as   = exponential_zn a (fromIntegral s) p
-                tabT = map (\x -> exponential_zn as x p) [1..(fromIntegral s)]
-                i    = intersect tabS tabT
-                indx = map (\x -> getIndexTwoLists x tabT tabS) i
-                k    = map (\x -> (fst x)*s - (snd x)) indx
 
+    giant_step :: (Integral a, Random a) => a -> a -> a -> a -> a -> [a] -> a
+    giant_step as t p count s tS
+        | count == s = -1
+        | elem t tS  = (count*s) - (fromIntegral $ fromJust $ elemIndex t tS)
+        | otherwise  = giant_step as x p (count+1) s tS
+            where
+                x = t * as `mod` p
+
+    baby_s_giant_s :: (Integral a, Random a) => a -> a -> a -> a
+    baby_s_giant_s a c p 
+        | not $ miller_rabin p = error "p debe ser primo"
+        | otherwise            = giant_step as as p 1 s tabS
+            where
+                s    = ceiling (sqrt (fromIntegral p-1))
+                tabS = baby_step a c p s
+                as   = exponential_zn a (fromIntegral s) p
     {-
     Ejercicio 6
 
