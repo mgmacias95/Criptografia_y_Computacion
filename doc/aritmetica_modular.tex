@@ -214,74 +214,41 @@ Para hacer estas listas, he usado la función \texttt{zipWith} de Haskell.
 En el caso de la lista $S$, la he generado con el siguiente código:
 
 \begin{minted}[linenos, frame=lines, label={Calculando la tabla S}]{haskell}
-l1   = replicate (fromIntegral s) a
-pa   = zipWith (\x y -> exponential_zn x y p) l1 [0..(fromIntegral s)]
-tabS = zipWith (\x y -> x * y `mod` p) pa (replicate (fromIntegral s) c)
+baby_step :: (Integral a, Random a) => a -> a -> a -> a -> [a]
+baby_step a c p s = tabS
+        where
+            pa   = map (\x -> exponential_zn a x p) [0..(fromIntegral s)]
+            tabS = map (\x -> x * c `mod` p) pa
 \end{minted}
 
-en primer lugar, creo una lista con las potencias de $a$: $pa = \{a^0, a^1, \cdots, a^s\}$ y por último, la multiplico (módulo $p$) con una lista de $s$ elementos $c$.
+en primer lugar, creo una lista con las potencias de $a$: $pa = \{a^0, a^1, \cdots, a^s\}$ y por último, la multiplico (módulo $p$) por $c$.
 
-En el caso de la lista $T$, la he generado con el siguiente código:
+En el caso de la lista $T$, no la he calculado entera, sino que he ido calculando elemento a elemento hasta encontrar uno que estuviese en la lista $S$. Con esta aproximación, \textbf{\textcolor{rojo}{sólo obtengo la solución de menor valor}}. Cuando dicho valor se encuentra, calculo su valor haciendo $k$. Con esta aproximación consigo recortar muchísimo el tiempo de ejecución, ya que en primer lugar calculé la tabla $T$ y, a la hora de hacer los test, era demasiado lento.
 
 \begin{minted}[linenos, frame=lines, label={Calculando la tabla T}]{haskell}
-as   = exponential_zn a (fromIntegral s) p
-asl  = (replicate (fromIntegral s) as)
-tabT = zipWith (\x y -> exponential_zn x y p) asl [1..(fromIntegral s)]
+giant_step :: (Integral a, Random a) => a -> a -> a -> a -> a -> [a] -> a
+giant_step as t p count s tS
+    | count == s = -1
+    | elem t tS  = (count*s) - (fromIntegral $ fromJust $ elemIndex t tS)
+    | otherwise  = giant_step as x p (count+1) s tS
+        where
+            x = t * as `mod` p
 \end{minted}
 
-en primer lugar, calculo el valor de $as=a^s \bmod p$ y creo una lista repitiendo $s$ veces $as$. Por último, calculo la lista $T$ usando la función $a^b \bmod n$ que he desarrollado en el ejercicio anterior.
+Todos estos pasos están reflejados en la función \texttt{baby\_s\_giant\_s} que he desarrollado:
 
-Una vez tengo calculadas ambas listas, paso a buscar coincidencias entre ellas calculando su intersección.
-
-\begin{displaymath}
-T \cap S = \begin{cases}
-\emptyset & \text{No hay solución} \\
-\text{en otro caso} & k
-\end{cases}  
-\end{displaymath}
-
-donde $k$ es el conjunto de todos los elementos que coinciden en ambas tablas.
-
-\begin{minted}[linenos, frame=lines, label={Calculando la intersección de T y S}]{haskell}
-i = intersect tabS tabT
-\end{minted}
-
-Una vez tenemos los elementos que coinciden en ambas tablas, necesitamos encontrar los índices de cada elemento en cada tabla, ya que el $k$ que buscamos se puede expresar como $k = t \cdot s - r$.  Para obtener los índices, $(t,r)$, de cada tabla he desarrollado la siguiente función Haskell:
-
-\begin{minted}[linenos, frame=lines, label={getIndexTwoLists}]{haskell}
-getIndexTwoLists :: Integral a => a -> [a] -> [a] -> (a,a)
-getIndexTwoLists i t r = (it+1, ir)
-            where
-                it = (fromIntegral (fromJust (elemIndex i t)))
-                ir = (fromIntegral (fromJust (elemIndex i r)))
-\end{minted}
-
-Una vez tengo los índices de cada elemento en las dos tablas, calculo para cada elemento $k$ su valor y devuelvo una lista con todos los $k$ encontrados:
-
-\begin{minted}[linenos, frame=lines, label={Computing k}]{haskell}
-indx = map (\x -> getIndexTwoLists x tabT tabS) i
-k    = map (\x -> (fst x)*s - (snd x)) indx
-\end{minted}
-
-Todos estos pasos están reflejados en la función \texttt{baby_s_giant_s} que he desarrollado:
-
-\begin{minted}[linenos, frame=lines, label={baby_s_giant_s}]{haskell}
-baby_s_giant_s :: (Integral a, Random a) => a -> a -> a -> [a]
+\begin{minted}[linenos, frame=lines, label={baby\_s\_giant\_s}]{haskell}
+baby_s_giant_s :: (Integral a, Random a) => a -> a -> a -> a
 baby_s_giant_s a c p 
     | not $ miller_rabin p = error "p debe ser primo"
-    | otherwise            = k
+    | otherwise            = giant_step as as p 1 s tabS
         where
             s    = ceiling (sqrt (fromIntegral p-1))
-            l1   = replicate (fromIntegral s) a
-            pa   = zipWith (\x y -> exponential_zn x y p) l1 [0..(fromIntegral s)]
-            tabS = zipWith (\x y -> x * y `mod` p) pa (replicate (fromIntegral s) c)
+            tabS = baby_step a c p s
             as   = exponential_zn a (fromIntegral s) p
-            asl  = (replicate (fromIntegral s) as)
-            tabT = zipWith (\x y -> exponential_zn x y p) asl [1..(fromIntegral s)]
-            i    = intersect tabS tabT
-            indx = map (\x -> getIndexTwoLists x tabT tabS) i
-            k    = map (\x -> (fst x)*s - (snd x)) indx
 \end{minted}
+
+En caso de no encontrar solución, se devuelve un $-1$.
 
 \section{\textcolor{rojo}Ejercicio 6}
 \textit{Sea $n = pq$, con $p$ y $q$ enteros primos positivos.
