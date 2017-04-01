@@ -1,6 +1,6 @@
 module AritmeticaModular (extended_euclides, inverse, exponential_zn, descomposicion_2us,
-                          miller_rabin, baby_s_giant_s, raices_cuadradas, metodo_fermat,
-                          rho) where
+                          miller_rabin, baby_s_giant_s, cuadrados, raices_cuadradas, 
+                          metodo_fermat, func, rho) where
     
     import System.Random -- instalar con cabal install random
     import System.IO.Unsafe
