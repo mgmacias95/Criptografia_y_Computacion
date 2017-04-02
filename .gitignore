@@ -149,3 +149,4 @@ sympy-plots-for-*.tex/
 *.html
 
 **/bin
+*.png
