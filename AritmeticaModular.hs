@@ -262,7 +262,7 @@ module AritmeticaModular (extended_euclides, inverse, exponential_zn, descomposi
             c = r == 0 || r == -2 ? r+4 :? r
 
     rho :: (Integral a, Random a) => a -> (a -> a -> a) -> (a, a)
-    rho n f
+    rho n f 
         | r == n   = error "No se ha encontrado factor. Vuelve a lanzar la función."
         |otherwise = (r, n `div` r)
                 where
