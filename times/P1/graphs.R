@@ -3,8 +3,10 @@ representa_datos <- function(datos, filename) {
     library(reshape2)
     d_dat <- melt(datos, id.vars="Primo")
     names(d_dat) <- c("Primo", "Version", "Tiempo")
-    ggplot(d_dat, aes(x=Primo,y=Tiempo,color=Version)) + geom_line() + geom_point()
-    ggsave(paste(filename, ".png", sep=""))
+    d_dat$Primo = as.character(d_dat$Primo)
+    ggplot(d_dat, aes(x=Primo,y=Tiempo)) + geom_bar(aes(fill=Version), 
+        position="dodge", stat="identity")
+    ggsave(paste(filename, ".png", sep=""), width=17)
 }
 
 miller_rabin <- read.csv("miller_rabin.csv")
