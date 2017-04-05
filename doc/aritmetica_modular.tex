@@ -10,6 +10,8 @@
 \usepackage{minted}
 \usepackage[left=3cm, right=3cm]{geometry}
 \usepackage{cancel}
+\usepackage{graphicx}
+\usepackage{subfigure}
 
 \usepackage[bookmarks=true,
             bookmarksnumbered=false, % true means bookmarks in
@@ -611,4 +613,30 @@ rho_aux n f x y
             x'      = f x n
             y'      = f x' n
 \end{minted}
+
+\section{\textcolor{rojo}Ejercicio 8}
+\textbf{Compara los tiempos de ejecución de tus implementaciones con las de tus compañeros y con las primitivas de algunos paquetes de cálculo simbólico como \textit{\textcolor{rojo}{GAP}}, \textit{textcolor{rojo}{Mathematica}}, \textcolor{rojo}{\textit{Maxima}}...}
+
+He comparado los tiempos de ejecución de mis funciones \texttt{miller\_rabin}, \texttt{baby\_s\_giant\_s}, \texttt{metodo\_fermat} y \texttt{rho} con las funciones \texttt{is\_prime}, \texttt{bsgs} y \texttt{factors} de \textit{\textcolor{rojo}{Sagemath}}.
+
+En la \hyperref[graficas]{Figura \ref*{graficas}} vemos gráficos en los que se reflejan los tiempos de ejecución de las implementaciones a comparar. La implementación de \textit{\textcolor{rojo}{Sagemath}} es, generalmente, más rápida que la mía en Haskell menos en la descomposición en factores. Esto puede deberse a que mi descomposición únicamente devuelve una pareja de factores mientras que la de \textit{\textcolor{rojo}{Sagemath}} devuelve todas las posibles. La peor implementación que he hecho es la del \textit{\textcolor{rojo}{Baby Step Giant Step}}, ya que cuando el algoritmo no es capaz de encontrar un algoritmo, tiene que hacer $O(\sqrt{n})$ pasos, haciéndose terriblemente lento. He intentado mejorarlo calculando únicamente el paso enano pero, aún así, no he podido rebajar los tiempos tan altos que obtenía para algunos casos. Por último, la función \texttt{is\_prime} y mi función \texttt{miller\_rabin} están bastante igualadas, aunque la mía es algo más lenta.  
+
+\begin{figure}
+    \centering
+    \subfigure[Comparación de funciones para saber si un número es primo]{
+        \includegraphics[width=\textwidth]{../times/P1/miller_rabin.png}
+        \label{prime}
+    }
+    \subfigure[Comparación de \textit{\textcolor{rojo}{Baby Step Giant Step}}]{
+        \includegraphics[width=\textwidth]{../times/P1/shanks.png}
+        \label{shanks}
+    }
+    \subfigure[Comparación de funciones para descomponer en factores]{
+        \includegraphics[width=\textwidth]{../times/P1/factorizar.png}
+        \label{factorizar}
+    }
+    \caption{Gráficos de tiempo de mi implementación y la de Sagemath}
+    \label{graficas}
+\end{figure}
+
 \end{document}
