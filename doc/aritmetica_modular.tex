@@ -211,16 +211,16 @@ Este algoritmo se basa en el cálculo de dos tablas, $S$ y $T$, para encontrar c
 S = \{c, ca, ca^2, \cdots, ca^n\} \qquad\ T = \{a^2, a^{2s}, \cdots, a^{ts}, \cdots, a^{ss}\}
 \end{displaymath}
 
-Para hacer estas listas, he usado la función \texttt{zipWith} de Haskell. 
+Para hacer estas listas, he usado la función \texttt{map} de Haskell. Además, como el uso de una lista era muy costoso a la hora de encontrar coincidencias entre ambas, he pasado a usar la \texttt{Data.Map} de Haskell, que implementa una Tabla Hash. Así, buscar si un elemento está en la tabla o no, pasará a hacerse en tiempo constante.
 
 En el caso de la lista $S$, la he generado con el siguiente código:
 
 \begin{minted}[linenos, frame=lines, label={Calculando la tabla S}]{haskell}
-baby_step :: (Integral a, Random a) => a -> a -> a -> a -> [a]
-baby_step a c p s = tabS
+baby_step :: (Integral a, Random a) => a -> a -> a -> a -> Map a a
+baby_step a c p s = Map.fromList tabS
         where
-            pa   = map (\x -> exponential_zn a x p) [0..(fromIntegral s)]
-            tabS = map (\x -> x * c `mod` p) pa
+            pa   = map (\x -> (exponential_zn a x p, x)) [0..(fromIntegral s)]
+            tabS = map (\x -> ((fst x) * c `mod` p, (snd x))) pa
 \end{minted}
 
 en primer lugar, creo una lista con las potencias de $a$: $pa = \{a^0, a^1, \cdots, a^s\}$ y por último, la multiplico (módulo $p$) por $c$.
@@ -228,11 +228,11 @@ en primer lugar, creo una lista con las potencias de $a$: $pa = \{a^0, a^1, \cdo
 En el caso de la lista $T$, no la he calculado entera, sino que he ido calculando elemento a elemento hasta encontrar uno que estuviese en la lista $S$. Con esta aproximación, \textbf{\textcolor{rojo}{sólo obtengo la solución de menor valor}}. Cuando dicho valor se encuentra, calculo su valor haciendo $k$. Con esta aproximación consigo recortar muchísimo el tiempo de ejecución, ya que en primer lugar calculé la tabla $T$ y, a la hora de hacer los test, era demasiado lento.
 
 \begin{minted}[linenos, frame=lines, label={Calculando la tabla T}]{haskell}
-giant_step :: (Integral a, Random a) => a -> a -> a -> a -> a -> [a] -> a
+giant_step :: (Integral a, Random a) => a -> a -> a -> a -> a -> Map a a -> a
 giant_step as t p count s tS
-    | count == s = -1
-    | elem t tS  = (count*s) - (fromIntegral $ fromJust $ elemIndex t tS)
-    | otherwise  = giant_step as x p (count+1) s tS
+    | count == s      = -1
+    | Map.member t tS = (count*s) - (tS Map.! t)
+    | otherwise       = giant_step as x p (count+1) s tS
         where
             x = t * as `mod` p
 \end{minted}
