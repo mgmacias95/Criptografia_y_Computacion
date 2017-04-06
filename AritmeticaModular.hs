@@ -6,6 +6,9 @@ module AritmeticaModular (extended_euclides, inverse, exponential_zn, descomposi
     import System.IO.Unsafe
     import Data.List 
     import Data.Maybe
+    import Data.Map (Map) -- This just imports the type name
+    import qualified Data.Map as Map  -- Imports everything else, but with names 
+                                      -- prefixed with "Map." (with the period).
 
     -- ternary operator
     data Cond a = a :? a
@@ -126,17 +129,17 @@ module AritmeticaModular (extended_euclides, inverse, exponential_zn, descomposi
     Implementa el algoritmo paso enano-paso gigante para el cálculo de logaritmos
     discretos en Zp.
     -}
-    baby_step :: (Integral a, Random a) => a -> a -> a -> a -> [a]
-    baby_step a c p s = tabS
+    baby_step :: (Integral a, Random a) => a -> a -> a -> a -> Map a a
+    baby_step a c p s = Map.fromList tabS
             where
-                pa   = map (\x -> exponential_zn a x p) [0..(fromIntegral s)]
-                tabS = map (\x -> x * c `mod` p) pa
+                pa   = map (\x -> (exponential_zn a x p, x)) [0..(fromIntegral s)]
+                tabS = map (\x -> ((fst x) * c `mod` p, (snd x))) pa
 
-    giant_step :: (Integral a, Random a) => a -> a -> a -> a -> a -> [a] -> a
+    giant_step :: (Integral a, Random a) => a -> a -> a -> a -> a -> Map a a -> a
     giant_step as t p count s tS
-        | count == s = -1
-        | elem t tS  = (count*s) - (fromIntegral $ fromJust $ elemIndex t tS)
-        | otherwise  = giant_step as x p (count+1) s tS
+        | count == s      = -1
+        | Map.member t tS = (count*s) - (tS Map.! t)
+        | otherwise       = giant_step as x p (count+1) s tS
             where
                 x = t * as `mod` p
 
