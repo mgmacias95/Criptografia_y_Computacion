@@ -19,3 +19,6 @@ golomb s = cond1 && cond2
 
 rotate :: (Integral a) => [a] -> Int -> [a]
 rotate s k = drop (length s - k) . take (2*(length s)-k) $ cycle s
+
+hamming_distance_one :: (Integral a) => [a] -> Int -> a
+hamming_distance_one s k = sum $ zipWith (\x y -> abs (x-y)) s (rotate s k)
