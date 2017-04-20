@@ -15,3 +15,7 @@ golomb s = cond1 && cond2
         n       = takeWhile (> 0) $ map (\x -> length $ elemIndices x b) [1..]
         n_c2    = dropWhile (\x -> fst x >= 2*snd x) (zip n (snd (splitAt 1 n))) 
         cond2   = length n_c2 <= 1
+
+
+rotate :: (Integral a) => [a] -> Int -> [a]
+rotate s k = drop (length s - k) . take (2*(length s)-k) $ cycle s
