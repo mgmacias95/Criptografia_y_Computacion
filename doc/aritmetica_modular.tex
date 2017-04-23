@@ -49,6 +49,7 @@
 
 \begin{document}
 \maketitle
+\tableofcontents
 
 \renewcommand{\tablename}{Tabla}
 
@@ -619,7 +620,7 @@ rho_aux n f x y
 
 He comparado los tiempos de ejecución de mis funciones \texttt{miller\_rabin}, \texttt{baby\_s\_giant\_s}, \texttt{metodo\_fermat} y \texttt{rho} con las funciones \texttt{is\_prime}, \texttt{bsgs} y \texttt{factors} de \textit{\textcolor{rojo}{Sagemath}}.
 
-En la \hyperref[graficas]{Figura \ref*{graficas}} vemos gráficos en los que se reflejan los tiempos de ejecución de las implementaciones a comparar. La implementación de \textit{\textcolor{rojo}{Sagemath}} es, generalmente, más rápida que la mía en Haskell menos en la descomposición en factores. Esto puede deberse a que mi descomposición únicamente devuelve una pareja de factores mientras que la de \textit{\textcolor{rojo}{Sagemath}} devuelve todas las posibles. La peor implementación que he hecho es la del \textit{\textcolor{rojo}{Baby Step Giant Step}}, ya que cuando el algoritmo no es capaz de encontrar un algoritmo, tiene que hacer $O(\sqrt{n})$ pasos, haciéndose terriblemente lento. He intentado mejorarlo calculando únicamente el paso enano pero, aún así, no he podido rebajar los tiempos tan altos que obtenía para algunos casos. Por último, la función \texttt{is\_prime} y mi función \texttt{miller\_rabin} están bastante igualadas, aunque la mía es algo más lenta.  
+En la \hyperref[graficas]{Figura \ref*{graficas}} vemos gráficos en los que se reflejan los tiempos de ejecución de las implementaciones a comparar. La implementación de \textit{\textcolor{rojo}{Sagemath}} es, generalmente, más rápida que la mía en Haskell menos en la descomposición en factores. Esto puede deberse a que mi descomposición únicamente devuelve una pareja de factores mientras que la de \textit{\textcolor{rojo}{Sagemath}} devuelve todas las posibles. La función \texttt{is\_prime} y mi función \texttt{miller\_rabin} están bastante igualadas, aunque la mía es algo más lenta. Por último, gracias a que implementé \texttt{baby\_s\_giant\_s} usando una tabla hash por debajo (\texttt{Data.Map} en Haskell), he podido rebajar un montón los tiempos de ejecución de mi algoritmo, quedando bastante cerca de Sage. En general, pienso que la implementación ha sido más lenta que la de Sage porque ésta última está implementada en paralelo, mientras que la mía es secuencial.
 
 \begin{figure}
     \centering

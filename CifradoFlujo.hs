@@ -1,4 +1,5 @@
 import Data.List
+import Data.Bits
 
 {-
 Ejercicio 1.
@@ -19,8 +20,26 @@ golomb s = cond1 && cond2 && cond3
         cond3   = (foldl1 (\ x y -> y - x) dists) == 0
 
 
-rotate :: (Integral a) => [a] -> Int -> [a]
-rotate s k = drop (length s - k) . take (2*(length s)-k) $ cycle s
+rotar :: (Integral a) => [a] -> Int -> [a]
+rotar s k = drop (length s - k) . take (2*(length s)-k) $ cycle s
 
 hamming_distance_one :: (Integral a) => [a] -> Int -> a
-hamming_distance_one s k = sum $ zipWith (\x y -> abs (x-y)) s (rotate s k)
+hamming_distance_one s k = sum $ zipWith (\x y -> abs (x-y)) s (rotar s k)
+
+{-
+Ejercicio 2.
+Implementa registros lineales de desplazamiento con retroalimentación (LFSR).
+La entrada son los coeficientes del polinomio de conexión, la semilla y la 
+longitud de la secuencia de salida.
+
+Ilustra con ejemplos la dependencia del período de la semilla en el caso de
+polinomios reducibles, la independencia en el caso de polinomios irreducibles
+y la maximalidad en el caso de polinomios primitivos.
+
+Comprueba que los ejemplos con polinomios primitivos satisfacen los postulados
+de Golomb.
+-}
+lfsr :: [Int] -> [Int] -> Int -> [[Int]]
+lfsr c s n
+    | length c /= length s = error "La semilla y los coeficientes del polinomio deben tener el mismo tamaño"
+    | otherwise            = take n $ iterate (\x -> drop 1 (x ++ [mod (sum $ zipWith (.&.) c x) 2])) s
