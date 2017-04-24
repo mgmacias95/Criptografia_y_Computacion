@@ -143,7 +143,7 @@ golomb s = cond1 && cond2 && cond3
 \section{\textcolor{azul}Ejercicio 2}
 \textbf{Implementa \textit{\textcolor{azul}{registros lineales de desplazamiento con retroalimentación}} (\textit{\textcolor{azul}{LFSR}}). La entrada son los coeficientes del polinomio de conexión, la semilla y la longitud de la secuencia de salida.}
 
-\textbf{Ilustra con ejemplos la dependencia del periodo de la semilla en el caso de polinomios reducibles, la independencia en el caso de polinomios irreducibles y la maximalidad del periodo en el caso de polinomios primitivos.}
+\textbf{Ilustra con ejemplos la dependencia del período de la semilla en el caso de polinomios reducibles, la independencia en el caso de polinomios irreducibles y la maximalidad del periodo en el caso de polinomios primitivos.}
 
 \textbf{Comprueba que los ejemplos con polinomios primitivos satisfacen los \textit{\textcolor{azul}{postulados de Golomb}}.}
 
@@ -181,5 +181,66 @@ De esta lista de listas resultantes, sólo nos interesa el último elemento. Est
 \end{displaymath}
 
 Por último, esta secuencia de bits obtenida se añade a la semilla inicial, $s$.
+
+\subsection{\textcolor{azul}Período de la semilla}
+Para obtener un período lo más largo posible, el polinomio debe ser \textit{\textcolor{azul}{primitivo}}. Para ilustrar esto, vamos a probar con varios polinomios y a comprobar el tamaño de su período.
+
+\begin{description}
+    \item[Reducible.] El polinomio $c(D) = D^4 + D^2 + 1 = (D^2 + D + 1)^2$ es \textit{\textcolor{azul}{reducible}} en $\mathbb{Z}_2 [x]$ y, por tanto, \textbf{\textcolor{azul}{el período de la semilla es menor que el máximo y depende de la semilla}}:
+
+    \begin{enumerate}[\color{azul}{$\bullet$}]
+        \item $s_0 = 1$, $s_1 = 0$, $s_2 = 0$ y $s_3 = 1$
+
+        \begin{displaymath}
+            \underbrace{100111}\underbrace{100111}\underbrace{100111}10\ldots
+        \end{displaymath}
+
+        Período de tamaño 6, que se puede descomponer en dos períodos de tamaño tres (100 y 111) que se intercalan.
+
+        \item $s_0 = 1$, $s_1 = 1$, $s_2 = 0$ y $s_3 = 1$
+
+        \begin{displaymath}
+            \underbrace{110}\underbrace{110}\underbrace{110}\underbrace{110}\underbrace{110}\underbrace{110}11\ldots
+        \end{displaymath}
+
+        en este caso, el período ha pasado a ser de tamaño 3.
+    \end{enumerate}
+
+    \item[Irreducible.] El polinomio $c'(D) = D^4 + D^3 + D^2 + D + 1$ es \textit{\textcolor{azul}{irreducible}}. En este caso, \textbf{\textcolor{azul}{el período de la semilla es independiente de la semilla y menor al máximo}}:
+
+    \begin{enumerate}
+        \item $s_0 = 1$, $s_1 = 0$, $s_2 = 0$ y $s_3 = 1$
+
+        \begin{displaymath}
+            \underbrace{10010}\underbrace{10010}\underbrace{10010}\underbrace{10010}10\ldots
+        \end{displaymath}
+
+        \item $s_0 = 1$, $s_1 = 1$, $s_2 = 0$ y $s_3 = 1$
+
+        \begin{displaymath}
+            \underbrace{11011}\underbrace{11011}\underbrace{11011}\underbrace{11011}11\ldots
+        \end{displaymath}
+
+        En ambos casos, el período tiene el mismo tamaño, 5. Por tanto, éste no depende de la semilla. Aún así, sigue siendo menor que el tamaño máximo $2^L - 1 = 15$.
+    \end{enumerate}
+
+    \item[Primitivo]. El polinomio $c''(D) = D^4 + D + 1$ es \textit{\textcolor{azul}{primitivo}}. En este caso, \textbf{\textcolor{azul}{el período obtenido es del tamaño máximo}}:
+
+    \begin{enumerate}
+        \item $s_0 = 1$, $s_1 = 0$, $s_2 = 0$ y $s_3 = 1$
+
+        \begin{displaymath}
+            \underbrace{100100011110101}10010\ldots
+        \end{displaymath}
+
+        \item $s_0 = 1$, $s_1 = 1$, $s_2 = 0$ y $s_3 = 1$
+
+        \begin{displaymath}
+            \underbrace{110101100100011}11010\ldots
+        \end{displaymath}
+
+        En ambos casos, el período tiene tamaño máximo $2^L - 1 = 15$.
+    \end{enumerate}
+\end{description}
 
 \end{document}
