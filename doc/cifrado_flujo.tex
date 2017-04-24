@@ -34,7 +34,7 @@
 \subsubsectionfont{\fontfamily{pag}\selectfont}
 
 \definecolor{rojo}{rgb}{0.8, 0.0, 0.0}
-\definecolor{azul}{rgb}{0.2, 0.2, 0.6}
+\definecolor{azul}{rgb}{0.01, 0.75, 0.24}
 \definecolor{temacuatro}{rgb}{0.0, 0.62, 0.38}
 \definecolor{temacinco}{rgb}{0.93, 0.35, 0.0}
 \definecolor{temaseis}{rgb}{0.6, 0.4, 0.8}
@@ -53,7 +53,7 @@
 \renewcommand{\tablename}{Tabla}
 
 \section{\textcolor{azul}Ejercicio 1}
-\textit{Escribe una función que determine si una secuencia de bits cumple los \textbf{\textcolor{azul}{postulados de Golomb}}.}
+\textbf{Escribe una función que determine si una secuencia de bits cumple los \textit{\textcolor{azul}{postulados de Golomb}}.}
 
 Los \textit{\textcolor{azul}{postulados de Golomb}} son:
 
@@ -108,15 +108,15 @@ dists   = map (\x -> hamming_distance_one s x) [1..length s-1]
 cond3   = (foldl1 (\ x y -> y - x) dists) == 0
 
 
-rotate :: (Integral a) => [a] -> Int -> [a]
-rotate s k = drop (length s - k) . take (2*(length s)-k) $ cycle s
+rotar :: (Integral a) => [a] -> Int -> [a]
+rotar s k = drop (length s - k) . take (2*(length s)-k) $ cycle s
 
 hamming_distance_one :: (Integral a) => [a] -> Int -> a
-hamming_distance_one s k = sum $ zipWith (\x y -> abs (x-y)) s (rotate s k)
+hamming_distance_one s k = sum $ zipWith (\x y -> abs (x-y)) s (rotar s k)
 
 \end{minted}
 
-Con la función \texttt{rotate} hago un ciclo inverso. Por ejemplo, si la entrada de la función rotate es $s=0011101$ y $k=1$, la salida será $1001110$. Si $k=2$, la salida sería $0100111$.
+Con la función \texttt{rotar} hago un ciclo inverso. Por ejemplo, si la entrada de la función rotar es $s=0011101$ y $k=1$, la salida será $1001110$. Si $k=2$, la salida sería $0100111$.
 
 La función \texttt{hamming\_distance\_one} calcula la \textit{\textcolor{azul}{distancia Hamming}} entre una secuencia de bits $s$ y esa misma secuencia rotada con un determinado $k$.
 
@@ -141,5 +141,45 @@ golomb s = cond1 && cond2 && cond3
 \end{minted}
 
 \section{\textcolor{azul}Ejercicio 2}
+\textbf{Implementa \textit{\textcolor{azul}{registros lineales de desplazamiento con retroalimentación}} (\textit{\textcolor{azul}{LFSR}}). La entrada son los coeficientes del polinomio de conexión, la semilla y la longitud de la secuencia de salida.}
+
+\textbf{Ilustra con ejemplos la dependencia del periodo de la semilla en el caso de polinomios reducibles, la independencia en el caso de polinomios irreducibles y la maximalidad del periodo en el caso de polinomios primitivos.}
+
+\textbf{Comprueba que los ejemplos con polinomios primitivos satisfacen los \textit{\textcolor{azul}{postulados de Golomb}}.}
+
+\subsection{\textcolor{azul}Implementación}
+El código desarrollado para implementar el LFSR es el siguiente:
+
+\begin{minted}[frame=single, label={LFSR}]{haskell}
+lfsr :: [Int] -> [Int] -> Int -> [Int]
+lfsr c s n
+    | length c /= length s = error $ "La semilla y los coeficientes del" ++
+                                     " polinomio deben tener el mismo tamaño"
+    | otherwise            = s ++ lst
+        where
+            seq = take (n - (length c - 1)) $ iterate (\x -> drop 1 (x ++ 
+                [mod (sum $ zipWith (.&.) c x) 2])) s
+            lst = map last $ tail seq
+\end{minted}
+
+Para calcular el nuevo bit que se añadirá a la secuencia, calculo un \textit{\textcolor{azul}{and}} bit a bit entre los coeficientes del polinomio y la secuencia. Una vez tengo la secuencia de bits resultado de la operación and, calculo su sumatoria módulo 2. 
+
+Al tener \textit{\textcolor{azul}{Haskell}} la \textit{\textcolor{azul}{evaluación perezosa}}, sólo llamo a la función \texttt{iterate} $n$ veces (la longitud de la secuencia).
+
+Vamos a ver un ejemplo detallado de cómo actuaría nuestra función. Supongamos $c(D) = D^4 + D^2 + 1$ y $s_0 = 1 \; s_1 = 0 \; s_2 = 0 \; s_3 = 1$. La secuencia de bits que obtendríamos con la función \texttt{iterate} sería la siguiente:
+
+\begin{displaymath}
+[[1,0,0,1],[0,0,1,1],[0,1,1,1],[1,1,1,1],[1,1,1,0],[1,1,0,0],[1,0,0,1]]
+\end{displaymath}
+
+Debido a que obtenemos una lista cuyo primer elemento es $s$ y los consecutivos son las secuencias de bits al ir aplicando la función, sólo necesitamos llamar a \texttt{take} con $n - tam(s)-1$. 
+
+De esta lista de listas resultantes, sólo nos interesa el último elemento. Esto se implementa en la variable \texttt{lst}, que itera por las listas obtenidas quedándose únicamente con el último elemento:
+
+\begin{displaymath}
+[1,1,1,0,0,1]
+\end{displaymath}
+
+Por último, esta secuencia de bits obtenida se añade a la semilla inicial, $s$.
 
 \end{document}
