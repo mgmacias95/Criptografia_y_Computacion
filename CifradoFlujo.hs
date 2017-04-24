@@ -39,7 +39,12 @@ y la maximalidad en el caso de polinomios primitivos.
 Comprueba que los ejemplos con polinomios primitivos satisfacen los postulados
 de Golomb.
 -}
-lfsr :: [Int] -> [Int] -> Int -> [[Int]]
+lfsr :: [Int] -> [Int] -> Int -> [Int]
 lfsr c s n
-    | length c /= length s = error "La semilla y los coeficientes del polinomio deben tener el mismo tamaño"
-    | otherwise            = take n $ iterate (\x -> drop 1 (x ++ [mod (sum $ zipWith (.&.) c x) 2])) s
+    | length c /= length s = error $ "La semilla y los coeficientes del" ++
+                                     " polinomio deben tener el mismo tamaño"
+    | otherwise            = s ++ lst
+        where
+            seq = take (n - (length c - 1)) $ iterate (\x -> drop 1 (x ++ 
+                [mod (sum $ zipWith (.&.) c x) 2])) s
+            lst = map last $ tail seq
