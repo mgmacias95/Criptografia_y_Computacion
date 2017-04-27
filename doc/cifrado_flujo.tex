@@ -283,4 +283,13 @@ Por ejemplo, la secuencia $s=100100011110101$ obtenida con el polinomio $c''(D) 
     \item Por último, las distancias de hamming entre las distintas rotaciones de $s$ es 8. Por tanto, al ser constante se cumple el tercer postulado.
 \end{enumerate}
 
+\section{\textcolor{azul}Ejercicio 3}
+\textbf{Un polinomio en varias variables con coeficientes en $\mathbb{Z}_2$ se puede expresar como suma de monomios,  simplemente  usando  la  propiedad  distributiva.   Cualquier  monomio $x_1^{e_1} \cdots x_n^{e_n} , e_i \in \mathbb{N}$, es, como función, equivalente a un monomio de la forma $x_{i_1} \cdots x_{i_r} (x^2=x \; \forall x \in \mathbb{Z}_2$, los $i_j$ son precisamente los índices tales que $e_{i_j} \neq 0)$.  Por ejemplo,  $1 + x^2 (y + x) = 1 + x^3 + x^2 y$, es equivalente a $1 + x + xy$, por lo que la representamos mediante $[[0, 0], [1, 0], [1, 1]]$, que se corresponde con la lista de exponentes en las dos variables: $x^0 y^0 + x^1 y^0 + x^1 y^1$.  Así un polinomio en $\mathbb{Z}_2$ se puede representar por una lista monomios.  Y cada monomio como una lista de $0$ y $1$, que corresponden con los exponentes de cada una de las variables que intervienen en el polinomio.}
+
+\textbf{Escribe una función que toma como argumentos una  función polinómica $f$, una semilla $s$ y un entero positivo $k$, y devuelve una secuencia de longitud $k$ generada al aplicar a $s$ el registro no lineal de desplazamiento con retroalimentación asociado a $f$.}
+
+\textbf{Encuentra el período de la \textit{\textcolor{azul}{NLFSR}} $((x \wedge y) \vee \bar{z}) \otimes t$ con semilla $1101$}
+
+El ejercicio propone pasar la función $f$ a la \textit{\textcolor{azul}{forma normal disyuntiva}}, en cambio, yo he hecho una implementación en la cual se trabaja directamente con $f$. Pienso que esto es más sencillo de implementar y más sencillo de entender.
+
 \end{document}

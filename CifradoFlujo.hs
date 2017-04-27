@@ -52,12 +52,39 @@ y la maximalidad en el caso de polinomios primitivos.
 Comprueba que los ejemplos con polinomios primitivos satisfacen los postulados
 de Golomb.
 -}
-lfsr :: [Int] -> [Int] -> Int -> [Int]
+lfsr :: (Integral a) => [Int] -> [Int] -> a -> [Int]
 lfsr c s n
     | length c /= length s = error $ "La semilla y los coeficientes del" ++
                                      " polinomio deben tener el mismo tamaño"
     | otherwise            = s ++ lst
         where
-            seq = take (n - (length c - 1)) $ iterate (\x -> drop 1 (x ++ 
+            seq = take ((fromIntegral n) - (length c - 1)) $ iterate (\x -> drop 1 (x ++ 
                 [mod (sum $ zipWith (.&.) c x) 2])) s
             lst = map last $ tail seq
+
+{-
+Ejercicio 3.
+
+Escribe una función que toma como argumentos una  función polinómica $f$, 
+una semilla $s$ y un entero positivo $k$, y devuelve una secuencia de longitud $k$ 
+generada al aplicar a $s$ el registro no lineal de desplazamiento con 
+retroalimentación asociado a $f$.
+
+Encuentra el período de la NLFSR $((x \wedge y) \vee \bar{z}) \otimes t$ 
+con semilla $1101$.
+-}
+func :: [Int] -> Int
+func l
+    | length l /= 4 = error "La semilla debe tener tamaño 4"
+    | otherwise     = xor t $ (.&.) z $ (.|.) x y
+        where
+            x = head l
+            t = last l
+            y = last $ init l
+            z = complement $ head $ tail l
+
+nlfsr :: (Integral a) => ([Int] -> Int) -> [Int] -> a -> [Int]
+nlfsr f s k = s ++ lst
+    where
+        seq = take ((fromIntegral k) - (length s -1)) $ iterate (\x -> drop 1 (x ++ [func x])) s
+        lst = map last $ tail seq
