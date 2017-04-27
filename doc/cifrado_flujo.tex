@@ -266,6 +266,10 @@ True
 True
 *Main> golomb $ lfsr [1,0,1] [1,0,1] 7
 True
+*Main> golomb $ lfsr [1,0,0,0,0,0,0,1,0,0] [1,1,0,1,0,0,1,0,0,0] (2^10 - 1)
+True
+*Main> golomb $ lfsr [1,0,0,0,0,0,0,0,0,1,0] [1,1,0,1,0,0,1,0,0,0,0] (2^11 - 1)
+True
 \end{minted}
 
 Por ejemplo, la secuencia $s=100100011110101$ obtenida con el polinomio $c''(D) = D^4 + D + 1$ y la semilla $1001$:
