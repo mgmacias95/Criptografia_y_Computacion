@@ -76,15 +76,16 @@ con semilla $1101$.
 func :: [Int] -> Int
 func l
     | length l /= 4 = error "La semilla debe tener tamaño 4"
-    | otherwise     = xor t $ (.&.) z $ (.|.) x y
+    | otherwise     = xor t $ (.|.) z $ (.&.) x y
         where
-            x = head l
-            t = last l
-            y = last $ init l
-            z = complement $ head $ tail l
+            x = l !! 0
+            y = l !! 1
+            z = ((l !! 2) - 1) `mod` 2
+            t = l !! 3
 
 nlfsr :: (Integral a) => ([Int] -> Int) -> [Int] -> a -> [Int]
 nlfsr f s k = s ++ lst
     where
-        seq = take ((fromIntegral k) - (length s -1)) $ iterate (\x -> drop 1 (x ++ [func x])) s
+        seq = take ((fromIntegral k) - (length s -1)) $ iterate (\x -> drop 1 
+            (x ++ [func x])) s
         lst = map last $ tail seq
