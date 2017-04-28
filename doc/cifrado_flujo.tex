@@ -290,6 +290,28 @@ Por ejemplo, la secuencia $s=100100011110101$ obtenida con el polinomio $c''(D) 
 
 \textbf{Encuentra el período de la \textit{\textcolor{azul}{NLFSR}} $((x \wedge y) \vee \bar{z}) \otimes t$ con semilla $1101$}
 
-El ejercicio propone pasar la función $f$ a la \textit{\textcolor{azul}{forma normal disyuntiva}}, en cambio, yo he hecho una implementación en la cual se trabaja directamente con $f$. Pienso que esto es más sencillo de implementar y más sencillo de entender.
+El ejercicio propone pasar la función $f$ a la \textit{\textcolor{azul}{forma normal disyuntiva}}, en cambio, yo he hecho una implementación en la cual se trabaja directamente con $f$. Pienso que esto es más sencillo de implementar y más sencillo de entender:
+
+\begin{minted}[frame=single, label={nlfsr}]{haskell}
+func :: [Int] -> Int
+func l
+    | length l /= 4 = error "La semilla debe tener tamaño 4"
+    | otherwise     = xor t $ (.|.) z $ (.&.) x y
+        where
+            x = l !! 0
+            y = l !! 1
+            z = ((l !! 2) - 1) `mod` 2
+            t = l !! 3
+
+nlfsr :: (Integral a) => ([Int] -> Int) -> [Int] -> a -> [Int]
+nlfsr f s k = s ++ lst
+    where
+        seq = take ((fromIntegral k) - (length s -1)) $ iterate (\x -> drop 1 
+            (x ++ [func x])) s
+        lst = map last $ tail seq
+
+\end{minted}
+
+La función es prácticamente igual a la LFSR, la única diferencia entre ambas es la función que se aplica a la secuencia semilla. En el caso de usar la semilla $1101$ obtenemos la secuencia $1101001001001\ldots$
 
 \end{document}
