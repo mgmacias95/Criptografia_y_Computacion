@@ -288,7 +288,7 @@ Por ejemplo, la secuencia $s=100100011110101$ obtenida con el polinomio $c''(D) 
 
 \textbf{Escribe una función que toma como argumentos una  función polinómica $f$, una semilla $s$ y un entero positivo $k$, y devuelve una secuencia de longitud $k$ generada al aplicar a $s$ el registro no lineal de desplazamiento con retroalimentación asociado a $f$.}
 
-\textbf{Encuentra el período de la \textit{\textcolor{azul}{NLFSR}} $((x \wedge y) \vee \bar{z}) \otimes t$ con semilla $1101$}
+\textbf{Encuentra el período de la \textit{\textcolor{azul}{NLFSR}} $((x \wedge y) \vee \bar{z}) \oplus t$ con semilla $1101$}
 
 El ejercicio propone pasar la función $f$ a la \textit{\textcolor{azul}{forma normal disyuntiva}}, en cambio, yo he hecho una implementación en la cual se trabaja directamente con $f$. Pienso que esto es más sencillo de implementar y más sencillo de entender:
 
@@ -313,5 +313,14 @@ nlfsr f s k = s ++ lst
 \end{minted}
 
 La función es prácticamente igual a la LFSR, la única diferencia entre ambas es la función que se aplica a la secuencia semilla. En el caso de usar la semilla $1101$ obtenemos la secuencia $1101001001001\ldots$
+
+\section{\textcolor{azul}Ejercicio 4}
+\textbf{Implementa el \textit{\textcolor{azul}{generador de Geffe}}.}
+
+\textbf{Encuentra ejemplos donde el período de la semilla es $p_1 p_2 p_3$ con $p_1$, $p_2$ y $p_3$ los períodos de tres LFSRs usados en el generador de Geffe.}
+
+\textbf{Usa este ejercicio para \textit{\textcolor{azul}{construir un cifrado en flujo}}. Con entrada un mensaje $m$, construye una llave $k$ con la misma longitud que $m$, y devuelve $m \oplus k$ (donde $\oplus$ significa la suma componente a componente en $\mathbb{Z}_2$).}
+
+\textbf{El descifrado se hace de la misma forma: $c \oplus k$ (nótese que $c \oplus k = (m \oplus k) \oplus k = m \oplus (k \oplus k) = m$, ya que $x \oplus x = 0$ en $\mathbb{Z}_2$).}
 
 \end{document}

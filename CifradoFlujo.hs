@@ -89,3 +89,23 @@ nlfsr f s k = s ++ lst
         seq = take ((fromIntegral k) - (length s -1)) $ iterate (\x -> drop 1 
             (x ++ [func x])) s
         lst = map last $ tail seq
+
+{-
+Ejercicio 4.
+Implementa el generador de Geffe.
+
+Encuentra ejemplos donde el periodo de la salida es p1p2p3, con p1, p2 y p3 los
+períodos de los tres LFSRs usados en el generador de Geffe.
+
+Usa este ejercicio para construir un cifrado en flujo. Con entrada un mensaje m,
+construye una llave k con la misma longitud que m, y devuelve m xor k.
+
+El descifrado se hace de la misma forma: c xor k.
+-}
+geffe :: [Int] -> [Int] -> [Int] -> [Int]
+geffe p1 p2 p3 = geffe_aux p1' p2' p3'
+    where
+        ml  = maximum $ map (length) [p1, p2, p3]
+        p1' = replicate (ml - length p1) 0 ++ p1
+        p2' = replicate (ml - length p2) 0 ++ p2
+        p3' = replicate (ml - length p3) 0 ++ p3
