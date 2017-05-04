@@ -102,10 +102,12 @@ construye una llave k con la misma longitud que m, y devuelve m xor k.
 
 El descifrado se hace de la misma forma: c xor k.
 -}
-geffe :: [Int] -> [Int] -> [Int] -> [Int]
-geffe p1 p2 p3 = geffe_aux p1' p2' p3'
+geffe :: [Int] -> [Int] -> [Int] -> [Int] -> [Int] -> [Int] -> [Int]
+geffe p1 s1 p2 s2 p3 s3 = zipWith3 (\x y z -> (.|.) z $ (.|.) x y) x12 x23 p3'
     where
-        ml  = maximum $ map (length) [p1, p2, p3]
-        p1' = replicate (ml - length p1) 0 ++ p1
-        p2' = replicate (ml - length p2) 0 ++ p2
-        p3' = replicate (ml - length p3) 0 ++ p3
+        l   = lcm (length p3) $ lcm (length p1) (length p2)
+        p1' = lfsr p1 s1 l
+        p2' = lfsr p2 s2 l
+        p3' = lfsr p3 s3 l
+        x12 = zipWith (.&.) p1' p2'
+        x23 = zipWith (.&.) p2' p3'
