@@ -111,3 +111,23 @@ geffe p1 s1 p2 s2 p3 s3 = zipWith3 (\x y z -> (.|.) z $ (.|.) x y) x12 x23 p3'
         p3' = lfsr p3 s3 l
         x12 = zipWith (.&.) p1' p2'
         x23 = zipWith (.&.) p2' p3'
+
+{-
+Ejercicio 5.
+Dada una sucesión de bits periódica, determina la complejidad lineal de dicha
+sucesión, y el polinomio de conexión que la genera. Para esto, usa el algoritmo de
+Berlekamp-Massey.
+
+Haz ejemplos con sumas y productos de secuencias para ver qué ocurre con 
+la complejidad lineal
+-}
+
+b_massey :: (Integral a) => [Int] -> a -> [Int]
+b_massey s = b_massey_aux k (k+1) k 0 (k+1) f g s 
+    where
+        k = length $ takeWhile (/=1) s
+        f = 1:replicate k 0 ++ 1:replicate (length s - k - 1) 0
+        g = 1:replicate (length s - 1) 0
+
+b_massey_aux :: (Integral a) => a -> a -> a -> a -> a -> [Int] -> [Int] -> [Int] -> a -> [Int]
+b_massey_aux k l a b r f g s
