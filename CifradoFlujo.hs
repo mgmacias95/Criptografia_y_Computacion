@@ -122,12 +122,23 @@ Haz ejemplos con sumas y productos de secuencias para ver qué ocurre con
 la complejidad lineal
 -}
 
-b_massey :: (Integral a) => [Int] -> a -> [Int]
-b_massey s = b_massey_aux k (k+1) k 0 (k+1) f g s 
+b_massey :: (Integral a) => [Int] -> (a, [Int])
+b_massey s = b_massey_aux (k+1) k 0 (k+1) f g s 
     where
-        k = length $ takeWhile (/=1) s
-        f = 1:replicate k 0 ++ 1:replicate (length s - k - 1) 0
+        k = fromIntegral $ length $ takeWhile (/=1) s
+        f = 1:replicate (fromIntegral k) 0 ++ 1:replicate (length s - (fromIntegral k) - 1) 0
         g = 1:replicate (length s - 1) 0
 
-b_massey_aux :: (Integral a) => a -> a -> a -> a -> a -> [Int] -> [Int] -> [Int] -> a -> [Int]
-b_massey_aux k l a b r f g s
+b_massey_aux :: (Integral a) => a -> a -> a -> a -> [Int] -> [Int] -> [Int] -> (a, [Int])
+b_massey_aux l a b r f g s
+    | fromIntegral r >= length s = ((fromIntegral l),f)
+    | d == 0                     = b_massey_aux l a (b+1) (r+1) f g s
+    | 2*l > r                    = b_massey_aux l a (b+1) (r+1) f' g s
+    | otherwise                  = b_massey_aux (r-l+1) b (r-l+1) (r+1) f'' f s
+        where
+            d   = sum $ zipWith (*) (take (fromIntegral l) f) (take (fromIntegral 
+                l) $ snd $ splitAt (fromIntegral $ r-l) s)
+            f'  = zipWith (+) (take (fromIntegral l) f) (take (fromIntegral l) 
+                $ snd $ splitAt (fromIntegral $ b-a) g)
+            f'' = zipWith (+) (take (fromIntegral $ r+l-1) g) (take (fromIntegral 
+                $ r+l-1) $ snd $ splitAt (fromIntegral $ a-b) f)
