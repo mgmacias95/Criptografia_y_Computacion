@@ -136,9 +136,11 @@ b_massey_aux l a b r f g s
     | 2*l > r                    = b_massey_aux l a (b+1) (r+1) f' g s
     | otherwise                  = b_massey_aux (r-l+1) b (r-l+1) (r+1) f'' f s
         where
-            d   = sum $ zipWith (*) (take (fromIntegral l) f) (take (fromIntegral 
+            d   = sum $ zipWith (*) (take (fromIntegral l + 1) f) (take (fromIntegral 
                 l) $ snd $ splitAt (fromIntegral $ r-l) s)
-            f'  = zipWith (+) (take (fromIntegral l) f) (take (fromIntegral l) 
-                $ snd $ splitAt (fromIntegral $ b-a) g)
-            f'' = zipWith (+) (take (fromIntegral $ r+l-1) g) (take (fromIntegral 
-                $ r+l-1) $ snd $ splitAt (fromIntegral $ a-b) f)
+            af  = zipWith (\x y -> (x+y) `mod` 2) (take (fromIntegral l + 1) f) 
+                (take (fromIntegral l + 1) $ snd $ splitAt (fromIntegral $ b-a) g)
+            f'  = af ++ replicate (length s - (fromIntegral l) - 1) 0
+            af' = zipWith (\x y -> (x+y) `mod` 2) (take (fromIntegral $ r+l) g) 
+                (take (fromIntegral $ r+l-1) $ snd $ splitAt (fromIntegral $ a-b) f)
+            f'' = af' ++ replicate (length s - (fromIntegral l) - 1) 0
