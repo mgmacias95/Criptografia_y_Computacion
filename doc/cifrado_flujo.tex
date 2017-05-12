@@ -323,4 +323,48 @@ La función es prácticamente igual a la LFSR, la única diferencia entre ambas 
 
 \textbf{El descifrado se hace de la misma forma: $c \oplus k$ (nótese que $c \oplus k = (m \oplus k) \oplus k = m \oplus (k \oplus k) = m$, ya que $x \oplus x = 0$ en $\mathbb{Z}_2$).}
 
+\section{\textcolor{azul}Ejercicio 5}
+\textbf{Dada una sucesión de bits periódica, determina la complejidad lineal de dicha sucesión, y el polinomio de conexión que la genera. Para esto, usa el algoritmo de \textit{\textcolor{azul}{Berlekamp-Massey}}.}
+
+\textbf{Haz ejemplos con sumas y productos de secuencias para ver qué ocurre con la complejidad lineal.}
+
+La idea del algoritmo de \textit{\textcolor{azul}{Berlekamp-Massey}} es ir encontrando una relación lineal que satisfagan los primeros $r$ bits de la secuencia, para $r = 1,2,\cdots,n-1$. Encontrada una relación para $r$ bits se comprueba si vale para $+1$ bits. De no ser así, se actualiza dicha relación.
+
+Para implementar el algoritmo me he basado en los apuntes de clase, aunque he notado un pequeño error entre la descripción del algoritmo y el ejemplo de los apuntes: $b$ no se incrementa si $2l \leq r$. 
+
+Mi implementación en \textit{\textcolor{azul}{Haskell}} es:
+
+\begin{minted}[frame=single, label={Berlekamp-Massey}]{haskell}
+b_massey :: (Integral a) => [Int] -> (a, [Int])
+b_massey s = b_massey_aux (k+1) k 0 (k+1) f g s 
+    where
+        k = fromIntegral $ length $ takeWhile (/=1) s
+        f = 1:replicate (fromIntegral k) 0 ++ 1:replicate (length s - (fromIntegral k) - 1) 0
+        g = 1:replicate (length s - 1) 0
+
+b_massey_aux :: (Integral a) => a -> a -> a -> a -> [Int] -> [Int] -> [Int] -> (a, [Int])
+b_massey_aux l a b r f g s
+    | fromIntegral r >= length s = ((fromIntegral l),f)
+    | d `mod` 2 == 0             = b_massey_aux l a (b+1) (r+1) f g s
+    | 2*l > r                    = b_massey_aux l a (b+1) (r+1) f' g s
+    | otherwise                  = b_massey_aux (r-l+1) b b (r+1) f'' f s
+        where
+            d   = sum $ zipWith (.&.) (take (fromIntegral l + 1) f) (take (fromIntegral 
+                l + 1) $ split_or_add_at (r-l) s)
+            af  = zipWith (xor) (take (fromIntegral l + 1) f) 
+                (take (fromIntegral l + 1) $ split_or_add_at (b-a) g)
+            f'  = af ++ replicate (length s - length af) 0
+            af' = zipWith (xor) (take (fromIntegral $ r+l+1) g) 
+                (take (fromIntegral $ r+l) $ split_or_add_at (a-b) f)
+            f'' = af' ++ replicate (length s - length af') 0
+
+split_or_add_at :: (Integral a) => a -> [Int] -> [Int]
+split_or_add_at n l
+    | n == -1   = 0:l
+    | n < -1    = replicate (abs $ fromIntegral $ n) 0 ++ l
+    | otherwise = snd $ splitAt (fromIntegral n) l
+\end{minted}
+
+
+
 \end{document}
