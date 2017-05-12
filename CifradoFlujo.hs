@@ -132,15 +132,21 @@ b_massey s = b_massey_aux (k+1) k 0 (k+1) f g s
 b_massey_aux :: (Integral a) => a -> a -> a -> a -> [Int] -> [Int] -> [Int] -> (a, [Int])
 b_massey_aux l a b r f g s
     | fromIntegral r >= length s = ((fromIntegral l),f)
-    | d == 0                     = b_massey_aux l a (b+1) (r+1) f g s
+    | d `mod` 2 == 0             = b_massey_aux l a (b+1) (r+1) f g s
     | 2*l > r                    = b_massey_aux l a (b+1) (r+1) f' g s
-    | otherwise                  = b_massey_aux (r-l+1) b (r-l+1) (r+1) f'' f s
+    | otherwise                  = b_massey_aux (r-l+1) b b (r+1) f'' f s
         where
-            d   = sum $ zipWith (*) (take (fromIntegral l + 1) f) (take (fromIntegral 
-                l) $ snd $ splitAt (fromIntegral $ r-l) s)
-            af  = zipWith (\x y -> (x+y) `mod` 2) (take (fromIntegral l + 1) f) 
-                (take (fromIntegral l + 1) $ snd $ splitAt (fromIntegral $ b-a) g)
-            f'  = af ++ replicate (length s - (fromIntegral l) - 1) 0
-            af' = zipWith (\x y -> (x+y) `mod` 2) (take (fromIntegral $ r+l) g) 
-                (take (fromIntegral $ r+l-1) $ snd $ splitAt (fromIntegral $ a-b) f)
-            f'' = af' ++ replicate (length s - (fromIntegral l) - 1) 0
+            d   = sum $ zipWith (.&.) (take (fromIntegral l + 1) f) (take (fromIntegral 
+                l + 1) $ split_or_add_at (r-l) s)
+            af  = zipWith (xor) (take (fromIntegral l + 1) f) 
+                (take (fromIntegral l + 1) $ split_or_add_at (b-a) g)
+            f'  = af ++ replicate (length s - length af) 0
+            af' = zipWith (xor) (take (fromIntegral $ r+l+1) g) 
+                (take (fromIntegral $ r+l) $ split_or_add_at (a-b) f)
+            f'' = af' ++ replicate (length s - length af') 0
+
+split_or_add_at :: (Integral a) => a -> [Int] -> [Int]
+split_or_add_at n l
+    | n == -1   = 0:l
+    | n < -1    = replicate (abs $ fromIntegral $ n) 0 ++ l
+    | otherwise = snd $ splitAt (fromIntegral n) l
