@@ -123,30 +123,22 @@ la complejidad lineal
 -}
 
 b_massey :: (Integral a) => [Int] -> (a, [Int])
-b_massey s = b_massey_aux (k+1) k 0 (k+1) f g s 
+b_massey s = b_massey_aux b 0 (-1) b 0 s
     where
-        k = fromIntegral $ length $ takeWhile (/=1) s
-        f = 1:replicate (fromIntegral k) 0 ++ 1:replicate (length s - (fromIntegral k) - 1) 0
-        g = 1:replicate (length s - 1) 0
+        b = 1:replicate (length s-1) 0
 
-b_massey_aux :: (Integral a) => a -> a -> a -> a -> [Int] -> [Int] -> [Int] -> (a, [Int])
-b_massey_aux l a b r f g s
-    | fromIntegral r >= length s = ((fromIntegral l),f)
-    | d `mod` 2 == 0             = b_massey_aux l a (b+1) (r+1) f g s
-    | 2*l > r                    = b_massey_aux l a (b+1) (r+1) f' g s
-    | otherwise                  = b_massey_aux (r-l+1) b b (r+1) f'' f s
+b_massey_aux :: (Integral a) => [Int] -> a -> a -> [Int] -> a -> [Int] -> (a, [Int])
+b_massey_aux c l m b n s
+    | length s <= fromIntegral n = (l, o)
+    | d == 1 && l <= (n `div` 2) = b_massey_aux t (n+1-l) n c (n+1) s
+    | d == 1                     = b_massey_aux t l m b (n+1) s
+    | otherwise                  = b_massey_aux c l m b (n+1) s
         where
-            d   = sum $ zipWith (.&.) (take (fromIntegral l + 1) f) (take (fromIntegral 
-                l + 1) $ split_or_add_at (r-l) s)
-            af  = zipWith (xor) (take (fromIntegral l + 1) f) 
-                (take (fromIntegral l + 1) $ split_or_add_at (b-a) g)
-            f'  = af ++ replicate (length s - length af) 0
-            af' = zipWith (xor) (take (fromIntegral $ r+l+1) g) 
-                (take (fromIntegral $ r+l) $ split_or_add_at (a-b) f)
-            f'' = af' ++ replicate (length s - length af') 0
-
-split_or_add_at :: (Integral a) => a -> [Int] -> [Int]
-split_or_add_at n l
-    | n == -1   = 0:l
-    | n < -1    = replicate (abs $ fromIntegral $ n) 0 ++ l
-    | otherwise = snd $ splitAt (fromIntegral n) l
+            v     = take (fromIntegral l+1) c 
+            w     = take (fromIntegral l+1) $ reverse $ fst $ splitAt (fromIntegral n) s
+            d     = xor (s !! (fromIntegral n)) (mod (sum $ zipWith (.&.) v w) 2)
+            e     = fst $ splitAt (length s - (fromIntegral (-n+m))) b
+            (f,g) = splitAt (fromIntegral (n-m)) c
+            t     = f ++ zipWith (xor) e g
+            o     = reverse $ zipWith (xor) (take (fromIntegral l) $ reverse c) 
+                    (take (fromIntegral l) s)

@@ -339,7 +339,8 @@ b_massey :: (Integral a) => [Int] -> (a, [Int])
 b_massey s = b_massey_aux (k+1) k 0 (k+1) f g s 
     where
         k = fromIntegral $ length $ takeWhile (/=1) s
-        f = 1:replicate (fromIntegral k) 0 ++ 1:replicate (length s - (fromIntegral k) - 1) 0
+        f = 1:replicate (fromIntegral k) 0 ++ 1:replicate (length s - 
+                (fromIntegral k) - 1) 0
         g = 1:replicate (length s - 1) 0
 
 b_massey_aux :: (Integral a) => a -> a -> a -> a -> [Int] -> [Int] -> [Int] -> (a, [Int])
@@ -349,8 +350,8 @@ b_massey_aux l a b r f g s
     | 2*l > r                    = b_massey_aux l a (b+1) (r+1) f' g s
     | otherwise                  = b_massey_aux (r-l+1) b b (r+1) f'' f s
         where
-            d   = sum $ zipWith (.&.) (take (fromIntegral l + 1) f) (take (fromIntegral 
-                l + 1) $ split_or_add_at (r-l) s)
+            d   = sum $ zipWith (.&.) (take (fromIntegral l + 1) f) 
+                (take (fromIntegral l + 1) $ split_or_add_at (r-l) s)
             af  = zipWith (xor) (take (fromIntegral l + 1) f) 
                 (take (fromIntegral l + 1) $ split_or_add_at (b-a) g)
             f'  = af ++ replicate (length s - length af) 0
@@ -365,6 +366,15 @@ split_or_add_at n l
     | otherwise = snd $ splitAt (fromIntegral n) l
 \end{minted}
 
+La función \texttt{b\_massey} se utiliza para para inicializar las variables del algoritmo y la función \texttt{split\_or\_add\_at}, para calcular el desplazamiento que debemos hacer de las secuencias de bits para operar con ellas. El bucle principal del algoritmo se implementa (recursivamente) en la función \texttt{b\_massey\_aux}.
 
+\subsection{\textcolor{azul}Ejemplos}
+
+Vamos a probar varios ejemplos para probar que funciona correctamente. En primer lugar, probamos el ejemplo de los apuntes $s = 10111100010011$. La solución de este ejemplo es $l=4$ y $x^4 + x^3 + 1$.
+
+\begin{minted}[frame=single, label={Ejemplos de b\_massey}]{haskell}
+*Main> b_massey [1,0,1,1,1,1,0,0,0,1,0,0,1,1]
+(4,[1,1,0,0,1,0,0,0,0,0,0,0,0,0])
+\end{minted}
 
 \end{document}
