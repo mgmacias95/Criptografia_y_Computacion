@@ -121,14 +121,25 @@ convertBase from to = digits to . unDigits from
 encode :: String -> [Int]
 encode c = map (ord) c
 
+group_n :: Int -> [a] -> [[a]]
+group_n _ [] = []
+group_n n l
+  | n > 0 = (take n l) : (group_n n (drop n l))
+  | otherwise = error "Negative n"
+
 decode :: [Int] -> String
 decode c = map (chr) c
+    where
+        d = group_n 7 c
 
-binary_encoding :: String -> [[Int]]
-binary_encoding msg = map (\x -> convertBase 10 2 [x]) $ encode msg
+binary_encoding :: String -> [Int]
+binary_encoding msg = concat $ map (\x -> convertBase 10 2 [x]) $ encode msg
 
-binary_decoding :: [[Int]] -> String
-binary_decoding msg = decode $ map (\x -> unDigits 10 x) $ map (\x -> convertBase 2 10 x) msg
+binary_decoding :: [Int] -> String
+binary_decoding msg = decode $ map (\x -> unDigits 10 x) b
+    where
+        a = group_n 7 msg
+        b = map (\x -> convertBase 2 10 x) a
 
 
 {-
