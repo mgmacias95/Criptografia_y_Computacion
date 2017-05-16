@@ -129,16 +129,18 @@ b_massey s = b_massey_aux b 0 (-1) b 0 s
 
 b_massey_aux :: (Integral a) => [Int] -> a -> a -> [Int] -> a -> [Int] -> (a, [Int])
 b_massey_aux c l m b n s
-    | length s <= fromIntegral n = (l, o)
+    | length s <= fromIntegral n = (l, c)
     | d == 1 && l <= (n `div` 2) = b_massey_aux t (n+1-l) n c (n+1) s
     | d == 1                     = b_massey_aux t l m b (n+1) s
     | otherwise                  = b_massey_aux c l m b (n+1) s
         where
-            v     = take (fromIntegral l+1) c 
+            v     = snd $ splitAt 1 $ take (fromIntegral l+2) c 
             w     = take (fromIntegral l+1) $ reverse $ fst $ splitAt (fromIntegral n) s
-            d     = xor (s !! (fromIntegral n)) (mod (sum $ zipWith (.&.) v w) 2)
-            e     = fst $ splitAt (length s - (fromIntegral (-n+m))) b
-            (f,g) = splitAt (fromIntegral (n-m)) c
-            t     = f ++ zipWith (xor) e g
-            o     = reverse $ zipWith (xor) (take (fromIntegral l) $ reverse c) 
-                    (take (fromIntegral l) s)
+            d     = (xor) (s !! (fromIntegral n)) (mod (sum $ zipWith (.&.) v w) 2)
+            e     = replicate (fromIntegral (n-m)) 0 ++ take (length s - (fromIntegral (n-m))) b
+            t     = zipWith (xor) e c
+            -- e     = fst $ splitAt (length s - (fromIntegral (n+m))) b
+            -- (f,g) = splitAt (fromIntegral (n-m)) c
+            -- t     = f ++ zipWith (xor) e g
+            -- o     = reverse $ zipWith (xor) (take (fromIntegral l) $ reverse c) 
+            --         (take (fromIntegral l) s)
