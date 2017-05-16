@@ -171,7 +171,7 @@ lfsr c s n
             lst = map last $ tail seq
 \end{minted}
 
-Para calcular el nuevo bit que se añadirá a la secuencia, calculo un \textit{\textcolor{azul}{and}} bit a bit entre los coeficientes del polinomio y la secuencia. Una vez tengo la secuencia de bits resultado de la operación and, calculo su sumatoria módulo 2. 
+Para calcular el nuevo bit que se añadirá a la secuencia, calculo un \textit{\textcolor{azul}{and}} bit a bit entre los coeficientes del polinomio y la secuencia. Una vez tengo la secuencia de bits resultado de la operación and, calculo su sumatoria módulo 2. Es importante resaltar que \textbf{\textcolor{azul}{el primer argumento que recibe la función es el polinomio como una lista de coeficientes}} (por ejemplo $D^3 + 1$ sería $[1,0,0]$), \textbf{\textcolor{azul}{el segundo argumento que recibe es la semilla y el último, el tamaño de la secuencia}}.
 
 Al tener \textit{\textcolor{azul}{Haskell}} la \textit{\textcolor{azul}{evaluación perezosa}}, sólo llamo a la función \texttt{iterate} $n$ veces (la longitud de la secuencia).
 
@@ -336,45 +336,41 @@ Mi implementación en \textit{\textcolor{azul}{Haskell}} es:
 
 \begin{minted}[frame=single, label={Berlekamp-Massey}]{haskell}
 b_massey :: (Integral a) => [Int] -> (a, [Int])
-b_massey s = b_massey_aux (k+1) k 0 (k+1) f g s 
+b_massey s = b_massey_aux b 0 (-1) b 0 s
     where
-        k = fromIntegral $ length $ takeWhile (/=1) s
-        f = 1:replicate (fromIntegral k) 0 ++ 1:replicate (length s - 
-                (fromIntegral k) - 1) 0
-        g = 1:replicate (length s - 1) 0
+        b = 1:replicate (length s-1) 0
 
-b_massey_aux :: (Integral a) => a -> a -> a -> a -> [Int] -> [Int] -> [Int] -> (a, [Int])
-b_massey_aux l a b r f g s
-    | fromIntegral r >= length s = ((fromIntegral l),f)
-    | d `mod` 2 == 0             = b_massey_aux l a (b+1) (r+1) f g s
-    | 2*l > r                    = b_massey_aux l a (b+1) (r+1) f' g s
-    | otherwise                  = b_massey_aux (r-l+1) b b (r+1) f'' f s
+b_massey_aux :: (Integral a) => [Int] -> a -> a -> [Int] -> a -> [Int] -> (a, [Int])
+b_massey_aux c l m b n s
+    | length s <= fromIntegral n = (l, o)
+    | d == 1 && l <= (n `div` 2) = b_massey_aux t (n+1-l) n c (n+1) s
+    | d == 1                     = b_massey_aux t l m b (n+1) s
+    | otherwise                  = b_massey_aux c l m b (n+1) s
         where
-            d   = sum $ zipWith (.&.) (take (fromIntegral l + 1) f) 
-                (take (fromIntegral l + 1) $ split_or_add_at (r-l) s)
-            af  = zipWith (xor) (take (fromIntegral l + 1) f) 
-                (take (fromIntegral l + 1) $ split_or_add_at (b-a) g)
-            f'  = af ++ replicate (length s - length af) 0
-            af' = zipWith (xor) (take (fromIntegral $ r+l+1) g) 
-                (take (fromIntegral $ r+l) $ split_or_add_at (a-b) f)
-            f'' = af' ++ replicate (length s - length af') 0
+            v = tail $ take (fromIntegral l+2) c 
+            w = take (fromIntegral l+1) $ reverse $ fst $ 
+                splitAt (fromIntegral n) s
+            d = (xor) (s !! (fromIntegral n)) (mod (sum $ zipWith (.&.) v w) 2)
+            e = replicate (fromIntegral (n-m)) 0 ++ 
+                take (length s - (fromIntegral (n-m))) b
+            t = zipWith (xor) e c
+            o = dropWhile (== 0) $ reverse c
 
-split_or_add_at :: (Integral a) => a -> [Int] -> [Int]
-split_or_add_at n l
-    | n == -1   = 0:l
-    | n < -1    = replicate (abs $ fromIntegral $ n) 0 ++ l
-    | otherwise = snd $ splitAt (fromIntegral n) l
 \end{minted}
 
-La función \texttt{b\_massey} se utiliza para para inicializar las variables del algoritmo y la función \texttt{split\_or\_add\_at}, para calcular el desplazamiento que debemos hacer de las secuencias de bits para operar con ellas. El bucle principal del algoritmo se implementa (recursivamente) en la función \texttt{b\_massey\_aux}.
+La función \texttt{b\_massey} se utiliza para para inicializar las variables del algoritmo. El bucle principal del algoritmo se implementa (recursivamente) en la función \texttt{b\_massey\_aux}. El polinomio $c$ que devuelve la función está \textbf{\textcolor{azul}{invertido}} (por eso se usa la función \texttt{reverse} antes de devolver el resultado) y que, además, \textbf{\textcolor{azul}{incluye el término independiente}}.
 
 \subsection{\textcolor{azul}Ejemplos}
 
-Vamos a probar varios ejemplos para probar que funciona correctamente. En primer lugar, probamos el ejemplo de los apuntes $s = 10111100010011$. La solución de este ejemplo es $l=4$ y $x^4 + x^3 + 1$.
+Como vemos, todos los resultados coinciden con el polinomio (primer argumento de la función \texttt{lfsr}) con el término independiente. Por tanto, podemos concluir que el algoritmo funciona correctamente.
 
 \begin{minted}[frame=single, label={Ejemplos de b\_massey}]{haskell}
-*Main> b_massey [1,0,1,1,1,1,0,0,0,1,0,0,1,1]
-(4,[1,1,0,0,1,0,0,0,0,0,0,0,0,0])
+*Main> b_massey $ lfsr [1,0,1,0,0] [0,0,1,0,1] 10
+(5,[1,0,1,0,0,1])
+*Main> b_massey $ lfsr [1,0,1] [1,0,1] 7
+(3,[1,0,1,1])
+*Main> b_massey $ lfsr [1,1,0,0] [1,0,0,1] 9
+(4,[1,1,0,0,1])
 \end{minted}
 
 \end{document}
