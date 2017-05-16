@@ -105,10 +105,9 @@ construye una llave k con la misma longitud que m, y devuelve m xor k.
 
 El descifrado se hace de la misma forma: c xor k.
 -}
-geffe :: [Int] -> [Int] -> [Int] -> [Int] -> [Int] -> [Int] -> [Int]
-geffe p1 s1 p2 s2 p3 s3 = zipWith3 (\x y z -> (.|.) z $ (.|.) x y) x12 x23 p3'
+geffe :: (Integral a) => ([Int], [Int], [Int], [Int], [Int], [Int]) -> a -> [Int]
+geffe (p1, s1, p2, s2, p3, s3) l = zipWith3 (\x y z -> (.|.) z $ (.|.) x y) x12 x23 p3'
     where
-        l   = (length p3) * (length p1) * (length p2)
         p1' = lfsr p1 s1 l
         p2' = lfsr p2 s2 l
         p3' = lfsr p3 s3 l
@@ -133,14 +132,29 @@ decode c = map (chr) c
         d = group_n 7 c
 
 binary_encoding :: String -> [Int]
-binary_encoding msg = concat $ map (\x -> convertBase 10 2 [x]) $ encode msg
+binary_encoding msg = concat f
+    where
+        b = map (\x -> convertBase 10 2 [x]) $ encode msg
+        f = map (\x -> replicate (8 - length x) 0 ++ x) b 
 
 binary_decoding :: [Int] -> String
 binary_decoding msg = decode $ map (\x -> unDigits 10 x) b
     where
-        a = group_n 7 msg
+        a = group_n 8 msg
         b = map (\x -> convertBase 2 10 x) a
 
+-- let key = ([1,1,0,0,1,0], [1,1,1,1,0,1], [1,0,1,0,1,1], [1,0,1,1,1,1], [1,1,0,1,0,0], [1,1,0,1,0,0])
+
+cifrado_flujo :: String -> ([Int], [Int], [Int], [Int], [Int], [Int]) -> [Int]
+cifrado_flujo msg key = zipWith (xor) m (geffe key l)
+    where
+        m  = binary_encoding msg
+        l  = length m
+
+descifrado_flujo :: ([Int], [Int], [Int], [Int], [Int], [Int]) -> [Int] -> String
+descifrado_flujo key msg = binary_decoding $ zipWith (xor) msg (geffe key l)
+    where
+        l  = length msg
 
 {-
 Ejercicio 5.
