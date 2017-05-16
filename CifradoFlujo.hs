@@ -134,7 +134,7 @@ b_massey_aux c l m b n s
     | d == 1                     = b_massey_aux t l m b (n+1) s
     | otherwise                  = b_massey_aux c l m b (n+1) s
         where
-            v     = snd $ splitAt 1 $ take (fromIntegral l+2) c 
+            v     = tail $ take (fromIntegral l+2) c 
             w     = take (fromIntegral l+1) $ reverse $ fst $ splitAt (fromIntegral n) s
             d     = (xor) (s !! (fromIntegral n)) (mod (sum $ zipWith (.&.) v w) 2)
             e     = replicate (fromIntegral (n-m)) 0 ++ take (length s - (fromIntegral (n-m))) b
