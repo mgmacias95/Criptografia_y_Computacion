@@ -1,5 +1,8 @@
 import Data.List
 import Data.Bits
+import Data.Digits (digits, unDigits)
+import Data.Char (chr, ord)
+-- import Codec.Binary.UTF8.String (encode, decode)
 
 -- ternary operator
 data Cond a = a :? a
@@ -111,6 +114,22 @@ geffe p1 s1 p2 s2 p3 s3 = zipWith3 (\x y z -> (.|.) z $ (.|.) x y) x12 x23 p3'
         p3' = lfsr p3 s3 l
         x12 = zipWith (.&.) p1' p2'
         x23 = zipWith (.&.) p2' p3'
+
+convertBase :: Integral a => a -> a -> [a] -> [a]
+convertBase from to = digits to . unDigits from
+
+encode :: String -> [Int]
+encode c = map (ord) c
+
+decode :: [Int] -> String
+decode c = map (chr) c
+
+binary_encoding :: String -> [[Int]]
+binary_encoding msg = map (\x -> convertBase 10 2 [x]) $ encode msg
+
+binary_decoding :: [[Int]] -> String
+binary_decoding msg = decode $ map (\x -> unDigits 10 x) $ map (\x -> convertBase 2 10 x) msg
+
 
 {-
 Ejercicio 5.
