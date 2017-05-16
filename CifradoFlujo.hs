@@ -139,8 +139,3 @@ b_massey_aux c l m b n s
             d     = (xor) (s !! (fromIntegral n)) (mod (sum $ zipWith (.&.) v w) 2)
             e     = replicate (fromIntegral (n-m)) 0 ++ take (length s - (fromIntegral (n-m))) b
             t     = zipWith (xor) e c
-            -- e     = fst $ splitAt (length s - (fromIntegral (n+m))) b
-            -- (f,g) = splitAt (fromIntegral (n-m)) c
-            -- t     = f ++ zipWith (xor) e g
-            -- o     = reverse $ zipWith (xor) (take (fromIntegral l) $ reverse c) 
-            --         (take (fromIntegral l) s)
