@@ -128,8 +128,6 @@ group_n n l
 
 decode :: [Int] -> String
 decode c = map (chr) c
-    where
-        d = group_n 7 c
 
 binary_encoding :: String -> [Int]
 binary_encoding msg = concat f

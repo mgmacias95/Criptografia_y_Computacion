@@ -323,6 +323,107 @@ La función es prácticamente igual a la LFSR, la única diferencia entre ambas 
 
 \textbf{El descifrado se hace de la misma forma: $c \oplus k$ (nótese que $c \oplus k = (m \oplus k) \oplus k = m \oplus (k \oplus k) = m$, ya que $x \oplus x = 0$ en $\mathbb{Z}_2$).}
 
+\subsection{\textcolor{azul}Generador de Geffe}
+
+El \textbf{\textcolor{azul}{generador de Geffe}} consiste en aplicar la siguiente función a tres secuencias resultantes de tres LFSR distintos:
+
+\begin{displaymath}
+    F(x_1, x_2, x_3) = x_1 \cdot x_2 \oplus x_2 \cdot x_3 \oplus x_3
+\end{displaymath}
+
+Yo lo he implementado de la siguiente forma:
+
+\begin{minted}[frame=single, label={Generador de Geffe}]{haskell}
+geffe :: (Integral a) => ([Int], [Int], [Int], [Int], [Int], [Int]) -> a -> [Int]
+geffe (p1, s1, p2, s2, p3, s3) l = zipWith3 (\x y z -> (xor) z $ (xor) x y) x12 x23 p3'
+    where
+        p1' = lfsr p1 s1 l
+        p2' = lfsr p2 s2 l
+        p3' = lfsr p3 s3 l
+        x12 = zipWith (.&.) p1' p2'
+        x23 = zipWith (.&.) p2' p3'
+\end{minted}
+
+Si tenemos tres LFSRs de longitudes $L_1$, $L_2$ y $L_3$, la complejidad lineal del generador de Geffe será $L_1 L_2 + L_2 L_3 + L_3$ y su período $mcm(2^{L_1} - 1, 2^{L_2} -1, 2^{L_3} - 1)$.
+
+Por ejemplo, usando los polinomios primitivos de antes ($L_1 = 4$, $L_2 = 5$ y $L_3 = 3$) obtenemos una secuencia de complejidad $38$:
+
+\begin{minted}[frame=single, label={Complejidad de un generador de geffe}]{haskell}
+*Main> key = ([1,0,0,1],[1,0,0,1],[1,0,0,1,0],[1,1,0,0,0],[1,0,1],[1,0,1])
+*Main> b_massey $ geffe key 1000
+(38,[1,0,1,1,0,1,0,1,1,1,1,0,1,0,1,1,1,1,0,1,1,0,1,1,0,1,1,1,0,1,1,1,1,1,1,1,0,1,1])
+*Main> 20 + 15 + 3
+38
+\end{minted}
+
+\subsection{\textcolor{azul}Cifrado y descifrado en flujo}
+Para poder implementar el cifrado y descifrado en flujo, he tenido que transformar un texto de entrada a binario. Para ello, me he apoyado en dos librerías de Haskell: \texttt{Data.Char} para transformar cada carácter a UTF-8 y \texttt{Data.Digits} para transformar cada número UTF-8 en base 10 a base 2 (y viceversa).
+
+La función \texttt{binary\_encoding} transforma un texto de entrada en una lista de ceros y unos. ¿Por qué uso la función \texttt{concat}? Porque la codificación a UTF-8 se realiza carácter a carácter mientras que el cifrado debe hacerse de toda la secuencia a la vez. Como mucho, un carácter en UTF-8 puede tener 8 bits, por lo que si la codificación tiene menos de 8 bits le añado ceros a la izquierda. Esto es necesario para poder agrupar después los bits codificados por caracteres.
+
+La función \texttt{binary\_decoding} recibe una entrada de bits, los agrupa en 8 bits (cada carácter UTF-8) y transforma dichos grupos a base 10. Por último, transforma dicha codificación a su correspondiente carácter.
+
+\begin{minted}[frame=single, label={Transformando texto en binario}]{haskell}
+import Data.Digits (digits, unDigits)
+import Data.Char (chr, ord)
+
+convertBase :: Integral a => a -> a -> [a] -> [a]
+convertBase from to = digits to . unDigits from
+
+encode :: String -> [Int]
+encode c = map (ord) c
+
+group_n :: Int -> [a] -> [[a]]
+group_n _ [] = []
+group_n n l
+  | n > 0 = (take n l) : (group_n n (drop n l))
+  | otherwise = error "Negative n"
+
+decode :: [Int] -> String
+decode c = map (chr) c
+
+binary_encoding :: String -> [Int]
+binary_encoding msg = concat f
+    where
+        b = map (\x -> convertBase 10 2 [x]) $ encode msg
+        f = map (\x -> replicate (8 - length x) 0 ++ x) b 
+
+binary_decoding :: [Int] -> String
+binary_decoding msg = decode $ map (\x -> unDigits 10 x) b
+    where
+        a = group_n 8 msg
+        b = map (\x -> convertBase 2 10 x) a
+\end{minted}
+
+Para realizar el cifrado y descifrado, covierto el texto a binario y genero una cadena con el generador de Geffe con la misma longitud. El texto cifrado es un $\oplus$ de ambas secuencias. Para descifrar, hago lo mismo:
+
+\begin{minted}[frame=single, label={Cifrado y descifrado en flujo}]{haskell}
+cifrado_flujo :: String -> ([Int], [Int], [Int], [Int], [Int], [Int]) -> [Int]
+cifrado_flujo msg key = zipWith (xor) m (geffe key l)
+    where
+        m  = binary_encoding msg
+        l  = length m
+
+descifrado_flujo :: ([Int], [Int], [Int], [Int], [Int], [Int]) -> [Int] -> String
+descifrado_flujo key msg = binary_decoding $ zipWith (xor) msg (geffe key l)
+    where
+        l  = length msg
+\end{minted}
+
+Un ejemplo de funcionamiento sería:
+
+\begin{minted}[frame=single, label={Cifrando y descifrando texto}]{haskell}
+*Main> key
+([1,0,0,1],[1,0,0,1],[1,0,0,1,0],[1,1,0,0,0],[1,0,1],[1,0,1])
+*Main> msg = "los ñu molan!!!"
+*Main> cifrado_flujo msg key
+[1,1,0,0,1,1,0,1,1,0,1,0,0,1,0,0,1,1,0,0,1,1,1,0,0,1,0,1,0,1,1,0,1,0,0,0,0,1,1,0,1,0,0,1,1,1,0,0,1,0,1,1,0,0,1,1,0,1,1,1,0,0,0,0,0,0,1,1,0,0,0,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,1,0,0,0,0,0,1,0,1,0,1,1,0,1,1,0,1,0,1,1,1,1,1,0,1,1,1,0,0,0,0,1,0,0]
+*Main> descifrado_flujo key $ cifrado_flujo msg key
+"los \241u molan!!!"
+\end{minted}
+
+La \textit{ñ} es el carácter $241$ en UTF-8, por lo que el descifrado se ha realizado correctamente.
+
 \section{\textcolor{azul}Ejercicio 5}
 \textbf{Dada una sucesión de bits periódica, determina la complejidad lineal de dicha sucesión, y el polinomio de conexión que la genera. Para esto, usa el algoritmo de \textit{\textcolor{azul}{Berlekamp-Massey}}.}
 
