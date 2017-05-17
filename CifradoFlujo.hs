@@ -106,7 +106,7 @@ construye una llave k con la misma longitud que m, y devuelve m xor k.
 El descifrado se hace de la misma forma: c xor k.
 -}
 geffe :: (Integral a) => ([Int], [Int], [Int], [Int], [Int], [Int]) -> a -> [Int]
-geffe (p1, s1, p2, s2, p3, s3) l = zipWith3 (\x y z -> (.|.) z $ (.|.) x y) x12 x23 p3'
+geffe (p1, s1, p2, s2, p3, s3) l = zipWith3 (\x y z -> (xor) z $ (xor) x y) x12 x23 p3'
     where
         p1' = lfsr p1 s1 l
         p2' = lfsr p2 s2 l
