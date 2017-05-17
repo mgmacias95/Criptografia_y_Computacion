@@ -2,7 +2,6 @@ import Data.List
 import Data.Bits
 import Data.Digits (digits, unDigits)
 import Data.Char (chr, ord)
--- import Codec.Binary.UTF8.String (encode, decode)
 
 -- ternary operator
 data Cond a = a :? a
