@@ -474,4 +474,23 @@ Como vemos, todos los resultados coinciden con el polinomio (primer argumento de
 (4,[1,1,0,0,1])
 \end{minted}
 
+Vamos a probar con sumas y productos de LFSR para ver qué ocurre con la complejidad lineal:
+
+\begin{minted}[frame=single, label={Sumas y productos de LFSR}]{haskell}
+*Main> let a = zipWith (.&.) (lfsr [1,0,1] [1,0,1] 25) (lfsr [1,0,0,1] [1,0,0,1] 25)
+*Main> let b = zipWith (xor) (lfsr [1,0,1] [1,0,1] 25) (lfsr [1,0,0,1] [1,0,0,1] 25)
+*Main> b_massey a
+(12,[1,0,0,1,0,0,0,1,1,1,0,1,1])
+*Main> b_massey b 
+(7,[1,0,1,0,1,1,0,1])
+*Main> let c = zipWith (xor) (lfsr [1,0,0,1,0] [1,1,0,0,0] 50) (lfsr [1,0,0,1] [1,0,0,1] 50)
+*Main> let d = zipWith (.&.) (lfsr [1,0,0,1,0] [1,1,0,0,0] 50) (lfsr [1,0,0,1] [1,0,0,1] 50)
+*Main> b_massey c 
+(9,[1,0,0,0,1,1,1,1,1,1])
+*Main> b_massey d
+(20,[1,0,0,1,0,0,1,0,0,1,1,1,1,0,0,0,0,0,1,0,1])
+\end{minted}
+
+Cuando hacemos una suma, la complejidad es la suma de $L_1$ y $L_2$, en cambio, cuando hacemos el producto la complejidad pasa a ser el producto de $L_1$ y $L_2$. 
+
 \end{document}
