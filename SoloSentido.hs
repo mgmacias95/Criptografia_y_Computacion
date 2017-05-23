@@ -29,5 +29,4 @@ mochi_gen_claves :: (Integral a, Random a) => [a] -> (a, a)
 mochi_gen_claves s = (m,u)
     where
         m = (sum s) * 2
-        l = filter (\x -> is_prime_relative x m) [1..m]
-        u = l !! (length l `div` 2)
+        u = last $ take (m `div` 3) $ filter (\x -> is_prime_relative x m) [(m `div` 2)..m]
