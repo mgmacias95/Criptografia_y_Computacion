@@ -83,7 +83,7 @@ y, para obtener el número de ceros, resto al tamaño total de la secuencia el n
 \begin{minted}[frame=single, label={Segundo postulado}]{haskell}
 b       = map (\x -> length x) (group s')
 n       = takeWhile (> 0) $ map (\x -> length $ elemIndices x b) [1..]
-n_c2    = dropWhile (\x -> fst x >= 2*snd x) (zip n (snd (splitAt 1 n))) 
+n_c2    = dropWhile (\x -> fst x == 2*snd x) (zip n (snd (splitAt 1 n))) 
 cond2   = length n_c2 <= 1
 \end{minted}
 

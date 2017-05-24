@@ -1,6 +1,5 @@
 import Data.List
-import System.Random -- instalar con cabal install random
-import System.IO.Unsafe
+import System.Random (Random, randomRs, mkStdGen, randomR)
 import AritmeticaModular
 
 {-
@@ -18,7 +17,7 @@ que la privada (y la puerta de atrás) es ((a1,...ak),n,u).
 genera_secuencia :: (Integral a, Random a) => a -> [a]
 genera_secuencia t = take (fromIntegral t) $ iterate (\x -> x*2) r
     where
-        r = unsafePerformIO $ randomRIO (5,20)
+        r = fst $ randomR (1,20) $ mkStdGen (238012)
 
 is_prime_relative :: (Integral a) => a -> a -> Bool
 is_prime_relative a b = x == 1
@@ -26,7 +25,8 @@ is_prime_relative a b = x == 1
         (x,_,_) = extended_euclides a b
 
 mochi_gen_claves :: (Integral a, Random a) => [a] -> (a, a)
-mochi_gen_claves s = (m,u)
+mochi_gen_claves s = (m,w)
     where
         m = (sum s) * 2
-        u = last $ take (m `div` 3) $ filter (\x -> is_prime_relative x m) [(m `div` 2)..m]
+        w = head $ dropWhile (\x -> not (is_prime_relative x m)) (randomRs (1,m) 
+            $ mkStdGen (28165137))
