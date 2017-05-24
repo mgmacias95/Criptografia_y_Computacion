@@ -18,7 +18,7 @@ que la privada (y la puerta de atrás) es ((a1,...ak),n,u).
 genera_secuencia :: (Integral a, Random a) => a -> [a]
 genera_secuencia t = take (fromIntegral t) $ iterate (\x -> x*2) r
     where
-        r = fst $ randomR (1,20) $ mkStdGen (238012)
+        r = fst $ randomR (2,20) $ mkStdGen (238012)
 
 is_prime_relative :: (Integral a) => a -> a -> Bool
 is_prime_relative a b = x == 1
@@ -31,7 +31,7 @@ mochi_gen_claves :: (Integral a, Random a) => [a] -> ([a], a, a, [a])
 mochi_gen_claves s = (a,m,w,pi)
     where
         m  = (sum s) * 2
-        w  = head $ dropWhile (\x -> not (is_prime_relative x m)) $ randomRs (1,m) 
+        w  = head $ dropWhile (\x -> not (is_prime_relative x m)) $ randomRs (1,m-1) 
              $ mkStdGen (28165137)
         pi = shuffle' s (length s) (mkStdGen (12354846535))
         a  = map (\x -> x*w `mod` m) pi

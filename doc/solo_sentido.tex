@@ -1,0 +1,111 @@
+\documentclass[10pt,spanish]{article}
+
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath, amsthm}
+\usepackage{amsfonts, amssymb, latexsym}
+\usepackage{enumerate}
+\usepackage[usenames, dvipsnames]{color}
+\usepackage{colortbl}
+\usepackage{minted}
+\usepackage[left=3cm, right=3cm]{geometry}
+\usepackage{cancel}
+\usepackage{graphicx}
+\usepackage{subfigure}
+
+\usepackage[bookmarks=true,
+            bookmarksnumbered=false, % true means bookmarks in
+                                     % left window are numbered
+            bookmarksopen=false,     % true means only level 1
+                                     % are displayed.
+            colorlinks=true,
+            linkcolor=webblue]{hyperref}
+\definecolor{webgreen}{rgb}{0, 0.5, 0} % less intense green
+\definecolor{webblue}{rgb}{0, 0, 0.5}  % less intense blue
+\definecolor{webred}{rgb}{0.5, 0, 0}   % less intense red
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1ex plus 0.5ex minus 0.2ex}
+
+%%%%% Para cambiar el tipo de letra en el título de la sección %%%%%%%%%%%
+\usepackage{sectsty}
+\sectionfont{\fontfamily{pag}\selectfont}
+\subsectionfont{\fontfamily{pag}\selectfont}
+\subsubsectionfont{\fontfamily{pag}\selectfont}
+
+\definecolor{azul}{rgb}{0.0, 0.44, 1.0}
+
+% \usepackage[default]{frcursive}
+% \usepackage[T1]{fontenc}
+
+%Definimos autor y título
+\title{\fontfamily{pag}\selectfont \bfseries \Huge \color{azul} Funciones de un sólo sentido}
+\author{\fontfamily{pag}\selectfont \bfseries \LARGE Marta Gómez}
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+\renewcommand{\tablename}{Tabla}
+
+\section{\textcolor{azul}Ejercicio 1}
+\textit{Sea $(a_1,\cdots,a_k)$ una secuencia \textbf{\textcolor{azul}{super-creciente}} de números positivos (la suma de todos los términos que preceden a $a_i$ es menor que $a_i$ para todo $i$). Elige un $n > \sum a_i$ y $u$ un entero positivo tal que $gcd(n,u) = 1$. Define $a_i^* = ua_i \pmod n$. La función \textbf{\textcolor{azul}{mochila}} (\textbf{\textcolor{azul}{knapsack}}) asociada a $(a_1^*,\cdots,a_k^*)$ es}
+
+\begin{displaymath}
+    f: \mathbb{Z}_2^k \rightarrow \mathbb{N}, f(x_1,\cdots,x_k) = \sum_{i=1}^k x_i a_i^*
+\end{displaymath}
+
+\textit{Implementa esta función y su inversa. La llave púlica es $(a_1^*,\cdots,a_k^*)$, mientras que la privada (y la puerta de atrás es) $((a_1,\cdots,a_k),n,u)$.}
+
+\subsection{\textcolor{azul}Generación de una secuencia super-creciente aleatoria}
+Para generar una secuencia \textit{\textcolor{azul}{super-creciente}} aleatoria, debemos asegurarnos de que dicha secuencia cumpla con la siguiente condición:
+
+\begin{displaymath}
+    b_i > \sum_{j=1}^{i-1} b_i \qquad\ \forall i, 2 \leq i \leq n
+\end{displaymath}
+
+Mi implementación en Haskell toma un primer elemento de forma aleatoria en el intervalo $[2,20]$ y, construye el resto de elementos a partir del primero, multiplicando el último elemento de la lista por dos. Como parámetro, recibe el número de elementos que tendrá la secuencia.
+
+\begin{minted}[frame=single, label={genera\_secuencia}]{haskell}
+genera_secuencia :: (Integral a, Random a) => a -> [a]
+genera_secuencia t = take (fromIntegral t) $ iterate (\x -> x*2) r
+    where
+        r = fst $ randomR (2,20) $ mkStdGen (238012)
+\end{minted}
+
+Un ejemplo de secuencia obtenida es la siguiente, que empieza por 12:
+
+\begin{displaymath}
+    [12,24,48,96,192,384,768,1536,3072,6144]
+\end{displaymath}
+
+\subsection{\textcolor{azul}Generación de claves}
+Para generar claves me he basado en el algoritmo 8.36 del libro \textit{\textcolor{azul}{Handbook of Applied Cryptography}}. El código Haskell desarrollado es:
+
+\begin{minted}[frame=single, label={Generación de claves}]{haskell}
+is_prime_relative :: (Integral a) => a -> a -> Bool
+is_prime_relative a b = x == 1
+    where
+        (x,_,_) = extended_euclides a b
+
+-- sólo devuelvo la secuencia super creciente ya permutada, ya que no calculo
+-- pi como una lista de índices sino como una permutación directamente.
+mochi_gen_claves :: (Integral a, Random a) => [a] -> ([a], a, a, [a])
+mochi_gen_claves s = (a,m,w,pi)
+    where
+        m  = (sum s) * 2
+        w  = head $ dropWhile (\x -> not (is_prime_relative x m)) $ randomRs (1,m-1) 
+             $ mkStdGen (28165137)
+        s' = shuffle' s (length s) (mkStdGen (12354846535))
+        a  = map (\x -> x*w `mod` m) pi
+\end{minted}
+
+En primer lugar, calculo $M = 2 \cdot \sum s_i$ ($n$ según la notación del enunciado). En lugar de calcular un número aleatorio mayor a la sumatoria, calculo el doble de ésta porque en Haskell los aleatorios son algo complicados. 
+
+Una vez he calculado $M$, paso a calcular $W$ ($u$ según la notación del enunciado) generando números aleatorios hasta obtener uno que sea primo relativo con $M$.
+
+Por último, mezclo de forma aleatoria la secuencia super-creciente inicial, usando la función \texttt{shuffle'}, y esta mezcla es la que utilizo para calcular $a^*$.
+
+Por último, devuelvo una tupla de cuatro elementos: el primero es la clave pública, $a^*$, y los tres siguientes forman la clave privada, $M, W, s'$. Según el algoritmo 8.36 del libro, la clave privada deberían ser tanto los índices barajados como la secuencia súper-creciente inicial, como yo barajo la secuencia directamente sólo he devuelto dicha secuencia ya barajada.
+
+\end{document}
