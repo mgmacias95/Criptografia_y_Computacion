@@ -47,3 +47,18 @@ mochi_encriptado s msg = f
         c = b ++ replicate z 0
         d = chunksOf t c
         f = map (\x -> sum $ zipWith (\y z -> (fromIntegral y)*z) x s) d
+
+merkle_hellman :: (Integral a, Random a) => a -> [a] -> [Int]
+merkle_hellman a [] = []
+merkle_hellman a (xs:s)
+    | a >= xs   = 1:merkle_hellman (a-xs) s
+    | otherwise = 0:merkle_hellman a s 
+
+-- descifrado
+mochi_descifrado :: (Integral a, Random a) => [a] -> a -> a -> [a] -> String
+mochi_descifrado msg n u a = binary_decoding $ concat d
+    where
+        v   = inverse u n
+        c   = map (\x -> x*v `mod` n) msg
+        r   = reverse a
+        d   = map (\x -> reverse $ merkle_hellman x r) c
