@@ -80,7 +80,7 @@ Un ejemplo de secuencia obtenida es la siguiente, que empieza por 12:
 \end{displaymath}
 
 \subsection{\textcolor{azul}Generación de claves}
-Para generar claves me he basado en el algoritmo 8.36 del libro \textit{\textcolor{azul}{Handbook of Applied Cryptography}}. El código Haskell desarrollado es:
+Para generar claves me he basado en el capítulo 4.5 del libro \textit{\textcolor{azul}{Notes on Cryptography}}. El código Haskell desarrollado es:
 
 \begin{minted}[frame=single, label={Generación de claves}]{haskell}
 is_prime_relative :: (Integral a) => a -> a -> Bool
@@ -88,24 +88,24 @@ is_prime_relative a b = x == 1
     where
         (x,_,_) = extended_euclides a b
 
--- sólo devuelvo la secuencia super creciente ya permutada, ya que no calculo
--- pi como una lista de índices sino como una permutación directamente.
 mochi_gen_claves :: (Integral a, Random a) => [a] -> ([a], a, a, [a])
-mochi_gen_claves s = (a,m,w,pi)
+mochi_gen_claves s = (a,n,u,s)
     where
-        m  = (sum s) * 2
-        w  = head $ dropWhile (\x -> not (is_prime_relative x m)) $ randomRs (1,m-1) 
+        n  = (sum s) * 2
+        u  = head $ dropWhile (\x -> not (is_prime_relative x n)) $ randomRs (1,n-1) 
              $ mkStdGen (28165137)
-        s' = shuffle' s (length s) (mkStdGen (12354846535))
-        a  = map (\x -> x*w `mod` m) pi
+        a  = map (\x -> x*u `mod` n) s
 \end{minted}
 
-En primer lugar, calculo $M = 2 \cdot \sum s_i$ ($n$ según la notación del enunciado). En lugar de calcular un número aleatorio mayor a la sumatoria, calculo el doble de ésta porque en Haskell los aleatorios son algo complicados. 
+En primer lugar, calculo $n = 2 \cdot \sum s_i$. En lugar de calcular un número aleatorio mayor a la sumatoria, calculo el doble de ésta porque en Haskell los aleatorios son algo complicados. 
 
-Una vez he calculado $M$, paso a calcular $W$ ($u$ según la notación del enunciado) generando números aleatorios hasta obtener uno que sea primo relativo con $M$.
+Una vez he calculado $n$, paso a calcular $u$ generando números aleatorios hasta obtener uno que sea primo relativo con $n$.
 
-Por último, mezclo de forma aleatoria la secuencia super-creciente inicial, usando la función \texttt{shuffle'}, y esta mezcla es la que utilizo para calcular $a^*$.
+Por último, calculo $a^*$ de la siguiente forma:
 
-Por último, devuelvo una tupla de cuatro elementos: el primero es la clave pública, $a^*$, y los tres siguientes forman la clave privada, $M, W, s'$. Según el algoritmo 8.36 del libro, la clave privada deberían ser tanto los índices barajados como la secuencia súper-creciente inicial, como yo barajo la secuencia directamente sólo he devuelto dicha secuencia ya barajada.
+\begin{displaymath}
+    a_i^* = ua_i \pmod n \qquad\ \forall i=1,\ldots,k 
+\end{displaymath}
 
+Devuelvo una tupla de cuatro elementos: el primero es la clave pública, $a^*$, y los tres siguientes forman la clave privada, $n, u, s$.
 \end{document}

@@ -1,5 +1,5 @@
 module CifradoFlujo (golomb, lfsr, nlfsr, cifrado_flujo, descifrado_flujo,
-                    b_massey) where
+                    b_massey, binary_encoding, binary_decoding) where
 
     import Data.List
     import Data.Bits
