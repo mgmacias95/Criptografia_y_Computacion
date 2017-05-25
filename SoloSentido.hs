@@ -38,8 +38,8 @@ mochi_gen_claves s = (a,n,u,s)
         a  = map (\x -> x*u `mod` n) s
 
 -- encriptado
-mochi_encriptado :: (Integral a, Random a) => [a] -> String -> [a]
-mochi_encriptado s msg = f
+mochi_cifrado :: (Integral a, Random a) => [a] -> String -> [a]
+mochi_cifrado s msg = f
     where
         b = binary_encoding msg
         t = length s
