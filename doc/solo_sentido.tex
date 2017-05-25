@@ -110,6 +110,144 @@ Por último, calculo $a^*$ de la siguiente forma:
 Devuelvo una tupla de cuatro elementos: el primero es la clave pública, $a^*$, y los tres siguientes forman la clave privada, $n, u, s$.
 
 \subsection{\textcolor{azul}Cifrado}
-Para cifrar un mensaje necesitamos la clave pública, $a^*$, generada previamente y el mensaje a cifrar.
+Para cifrar un mensaje necesitamos la clave pública, $a^*$, generada previamente y el mensaje a cifrar en texto plano. 
+
+En primer lugar, dicho mensaje debe ser convertido a una secuencia de bits, para esto uso las funciones desarrolladas en la práctica anterior. Una vez hecho, dicha secuencia de bits debe dividirse en trozos de igual tamaño que la clave pública (en caso de que el tamaño de la secuencia y la llave pública no sean múltiplos, se tendrán que añadir 0s al final de la secuencia). Al finalizar este proceso, el mensaje estará listo para ser cifrado.
+
+Pasamos a resolver el problema de la mochila, seleccionando los objetos cuyo peso sea un bit con valor 1 en la secuencia de bits:
+
+\begin{displaymath}
+    b^* = \sum e_i \cdot a_i^*
+\end{displaymath}
+
+Esto nos dará una lista con la solución al problema de la mochila obtenida para cada grupo de bits. Esta lista es nuestro mensaje cifrado.
+
+El código desarrollado en Haskell es:
+
+\begin{minted}[frame=single,label={Cifrado de la mochila}]{haskell}
+mochi_cifrado :: (Integral a, Random a) => [a] -> String -> [a]
+mochi_cifrado s msg = f
+    where
+        b = binary_encoding msg
+        t = length s
+        z = (t - (length b `mod` t)) `mod` t
+        c = b ++ replicate z 0
+        d = chunksOf t c
+        f = map (\x -> sum $ zipWith (\y z -> (fromIntegral y)*z) x s) d
+\end{minted}
+
+Por ejemplo, dado el mensaje ``hola'' y las siguientes claves:
+
+\begin{enumerate}[\color{azul}{$\longrightarrow$}]
+    \item $s = \{1,3,7,15,31,63,127,255\}$
+    \item $n = 557$
+    \item $u = 323$
+    \item $a^* = \{323,412,33,544,297,360,486\}$
+\end{enumerate}
+
+El algoritmo seguiría los siguientes pasos:
+
+\begin{enumerate}
+    \item En primer lugar, transformar el string ``hola'' a binario:
+
+\begin{minted}{haskell}
+*Main> msg = "hola!"
+*Main> b = binary_encoding msg
+*Main> b
+[0,1,1,0,1,0,0,0,0,1,1,0,1,1,1,1,0,1,1,0,1,1,0,0,0,1,1,0,0,0,0,1,0,0,1,0,0,0,0,1]
+\end{minted}
+
+    \item Como la longitud de $a^*$,8, es múltiplo de la longitud de la secuencia binaria, 32, no necesitamos añadir ningún 0 por detrás y directamente, dividimos la secuencia en subsecuencias de tamaño 8:
+
+\begin{minted}{haskell}
+*Main> t = length a
+*Main> z = (t - (length b `mod` t)) `mod` t
+*Main> z
+0
+*Main> d = chunksOf t b
+*Main> d
+[[0,1,1,0,1,0,0,0],[0,1,1,0,1,1,1,1],[0,1,1,0,1,1,0,0],[0,1,1,0,0,0,0,1],[0,0,1,0,0,0,0,1]]
+\end{minted}
+
+    \item Por último, calculamos el problema de la mochila usando los objetos que indiquen los bits a uno:
+
+\begin{minted}{haskell}
+*Main> f = map (\x -> sum $ zipWith (*) x a) d
+*Main> f
+[989,2132,1286,931,519]
+*Main> 
+\end{minted}
+\end{enumerate}
+
+\subsection{\textcolor{azul}Descifrado}
+Para descifrar un mensaje, necesitamos la secuencia super-creciente original, $s$, además de $n$ y $u$. Los pasos para descifrar un mensaje son:
+
+\begin{enumerate}
+    \item Calcular la inversa $v$ de $u \pmod n$.
+
+    \item Calcular $e^*$, para cada elemento del mensaje cifrado $b^*$:
+
+    \begin{displaymath}
+        e^*_i = v \cdot b^*_i \qquad\ \forall\; i=1,\ldots,k
+    \end{displaymath}
+
+    \item Resolver el problema de la mochila greedy (el algoritmo de \textit{\textcolor{azul}{Merkle Hellman}}) para cada $e^*_i$. Dicho algoritmo consiste en tomar el elemento de la lista mayor al peso restante por asignar.
+
+    \item Pasar la secuencia binaria obtenida a texto plano.
+\end{enumerate}
+
+El código desarrollado en Haskell es:
+
+\begin{minted}[frame=single,label={Descifrado de la mochila}]{haskell}
+merkle_hellman :: (Integral a, Random a) => a -> [a] -> [Int]
+merkle_hellman a [] = []
+merkle_hellman a (xs:s)
+    | a >= xs   = 1:merkle_hellman (a-xs) s
+    | otherwise = 0:merkle_hellman a s 
+
+
+mochi_descifrado :: (Integral a, Random a) => [a] -> a -> a -> [a] -> String
+mochi_descifrado msg n u a = binary_decoding $ concat d
+    where
+        v   = inverse u n
+        c   = map (\x -> x*v `mod` n) msg
+        r   = reverse a
+        d   = map (\x -> reverse $ merkle_hellman x r) c
+\end{minted}
+
+Siguiendo con el ejemplo anterior, una vez tenemos el mensaje $f = \{989,2132,1286,931,519\}$, los pasos que seguiría el algoritmo son:
+
+\begin{enumerate}[1.]
+    \item Calcular $v$:
+
+\begin{minted}{haskell}
+*Main> v = inverse u n
+*Main> v
+169
+\end{minted}
+
+    \item Calcular $e^*$:
+
+\begin{minted}{haskell}
+*Main> e = map (\x -> x*v `mod` n) f
+*Main> e
+[41,486,104,265,262]
+\end{minted}
+
+    \item Resolver el problema de la mochila usando el algoritmo Greedy:
+
+\begin{minted}{haskell}
+*Main> d = map (\x -> reverse $ merkle_hellman x (reverse s)) e
+*Main> d
+[[0,1,1,0,1,0,0,0],[0,1,1,0,1,1,1,1],[0,1,1,0,1,1,0,0],[0,1,1,0,0,0,0,1],[0,0,1,0,0,0,0,1]]
+\end{minted}
+
+    \item Transformar la secuencia de bits obtenida a caracteres:
+
+\begin{minted}{haskell}
+*Main> binary_decoding $ concat d
+"hola!"
+\end{minted}
+\end{enumerate}
 
 \end{document}
