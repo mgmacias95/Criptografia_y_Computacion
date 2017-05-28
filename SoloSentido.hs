@@ -62,3 +62,32 @@ mochi_descifrado msg n u a = binary_decoding $ concat d
         c   = map (\x -> x*v `mod` n) msg
         r   = reverse a
         d   = map (\x -> reverse $ merkle_hellman x r) c
+
+{-
+Ejercicio 2.
+Sea $p$ un (pseudo-)primo mayor o igual que vuestro número de identidad. 
+Encuentra un elemento primitivo $\alpha$, de $\mathbb{Z}_p^*$ 
+(se puede usar el libro "_Handbook of Applied Cryptography_"); para facilitar 
+el criterio, es bueno escoger $p$ de forma que $\frac{p - 1}{2}$ sea también 
+primo, y para ell usamos Miller-Rabin). Definimos 
+
+$$f:\mathbb{Z}_p \rightarrow \mathbb{Z}_p, x\mapsto\alpha^x$$
+
+
+Calcula el inverso de tu fecha de nacimiento con el formato AAAAMMDD.
+-}
+is_primitive_root :: (Integral a, Random a) => a -> a -> Bool
+is_primitive_root p a = (a `mod` p) /= (p-1) && (a^p2 `mod` p) == (p-1)
+    where
+        p2 = (p - 1) `div` 2
+
+find_primitive_root :: (Integral a, Random a) => a -> a
+find_primitive_root p = head $ dropWhile (\x -> not $ is_primitive_root p x) primos
+    where
+        primos = filter (miller_rabin) [2..p-2]
+
+-- inverso_nacimiento :: (Integral a, Random a) => a -> a
+-- inverso_nacimiento id = p
+--     where
+--         p = head $ dropWhile (\x -> not (miller_rabin x)) $ randomRs (id, id*2)
+--                  $ mkStdGen (174345884)
