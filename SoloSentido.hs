@@ -86,8 +86,9 @@ find_primitive_root p = head $ dropWhile (\x -> not $ is_primitive_root p x) pri
     where
         primos = filter (miller_rabin) [2..p-2]
 
--- inverso_nacimiento :: (Integral a, Random a) => a -> a
--- inverso_nacimiento id = p
---     where
---         p = head $ dropWhile (\x -> not (miller_rabin x)) $ randomRs (id, id*2)
---                  $ mkStdGen (174345884)
+inverso_nacimiento :: (Integral a, Random a) => a -> a
+inverso_nacimiento id = a
+    where
+        p = head $ dropWhile (\x -> not (miller_rabin x)) $ randomRs (id, id*2)
+                 $ mkStdGen (174345884)
+        a = find_primitive_root p

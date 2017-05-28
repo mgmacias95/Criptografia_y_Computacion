@@ -250,4 +250,29 @@ Siguiendo con el ejemplo anterior, una vez tenemos el mensaje $f = \{989,2132,12
 \end{minted}
 \end{enumerate}
 
+\section{\textcolor{azul}Ejercicio 2}
+
+\textit{Sea $p$ un (pseudo-)primo mayor o igual que vuestro \textbf{\textcolor{azul}{número de identidad}}. Encuentra un \textbf{\textcolor{azul}{elemento primitivo}}, $\alpha$, de $\mathbb{Z}_p^*$; para facilitar el criterio, es bueno escoger $p$ de forma que $\frac{p-1}{2}$ sea también primo, y para ello usaremos Miller-Rabin. Definimos}
+
+\begin{displaymath}
+f: \mathbb{Z}_p \rightarrow \mathbb{Z}_p, \qquad\ x \rightarrow \alpha^x
+\end{displaymath}
+
+\textit{Calcula el \textcolor{azul}{\textbf{inverso de tu fecha de nacimiento}} con el formato AAAAMMDD.}
+
+\subsection{\textcolor{azul}Calculando elementos primitivos}
+Para encontrar una raíz primitiva de $p$, con $p$ y $\frac{p-1}{2}$ primos, me he basado en el criterio de los apuntes de Jesús García Miranda. Dados $p$ y $\alpha$, $\alpha$ será una raíz primitiva de $p$ si y sólo si $\alpha \pmod p \neq p-1$ y $\alpha^{\frac{p-1}{2}} \pmod p = p-1$.
+
+\begin{minted}[frame=single, label={Encontrar elementos primitivos}]{haskell}
+is_primitive_root :: (Integral a, Random a) => a -> a -> Bool
+is_primitive_root p a = (a `mod` p) /= (p-1) && (a^p2 `mod` p) == (p-1)
+    where
+        p2 = (p - 1) `div` 2
+
+find_primitive_root :: (Integral a, Random a) => a -> a
+find_primitive_root p = head $ dropWhile (\x -> not $ is_primitive_root p x) primos
+    where
+        primos = filter (miller_rabin) [2..p-2]
+\end{minted}
+
 \end{document}
