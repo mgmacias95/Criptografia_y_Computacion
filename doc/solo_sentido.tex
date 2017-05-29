@@ -275,4 +275,54 @@ find_primitive_root p = head $ dropWhile (\x -> not $ is_primitive_root p x) pri
         primos = filter (miller_rabin) [2..p-2]
 \end{minted}
 
+\subsection{\textcolor{azul}Calculando $f$}
+Una vez hemos calculado $\alpha$, ahora pasamos a calcular la función $f$ definida:
+
+\begin{displaymath}
+f: \mathbb{Z}_p \rightarrow \mathbb{Z}_p, \qquad\ x \rightarrow \alpha^x
+\end{displaymath}
+
+donde $x$ es una fecha de nacimiento en formato $AAAAMMDD$. Dicha función se corresponde con el \textit{\textcolor{azul}{exponente modular}} que ya fue implementado en la práctica 1.
+
+\begin{minted}[frame=single, label={Calculando el inverso de una fecha de nacimiento}]{haskell}
+inverso_nacimiento :: (Integral a, Random a) => a -> a -> a
+inverso_nacimiento id birthday = exponential_zn a birthday p
+    where
+        p = head $ dropWhile (\x -> not (miller_rabin x)) [id..id*2]
+        a = find_primitive_root p
+\end{minted}
+
+En mi caso, mi DNI es 75929776 y mi fecha de nacimiento, 19950207. El inverso de mi fecha de nacimiento es 38071826.
+
+\begin{minted}[frame=single, label={Inverso de mi fecha de nacimiento}]{haskell}
+*Main> inverso_nacimiento 75929776 19950207
+38071826
+*Main>
+\end{minted}
+
+\section{\textcolor{azul}Ejercicio 3}
+\textit{En lo que sigue, $p$ y $q$ son enteros primos, y $n = p \cdot q$.}
+
+\textit{Sea $f: \mathbb{Z}_n \rightarrow \mathbb{Z}_n$ la \textit{\textcolor{azul}función de Rabin}: $f(x) = x^2$. Sea $n = 48478872564493742276963$. Sabemos que $f(12) = 144= f(37659670402359614687722)$. Usando esta información, calcula $p$ y $q$ (mirar la demostración del lema 2.43 del libro ``Lecture Notes on Cryptography'').}
+
+Si $gcd(x-y,n)$ es un divisor no trivial de $n$ (por ejemplo, $p$), $q$ será simplemente dividir $\frac{n}{p}$. Como en el enunciado ya nos dan $x$ e $y$, ya lo tenemos todo hecho:
+
+\begin{minted}[frame=single,label={Función para calcular p y q}]{haskell}
+get_pq :: (Integral a, Random a) => a -> a -> a -> (a,a)
+get_pq n x y = (p,q)
+    where
+        (p,_,_) = extended_euclides (x-y) n
+        q       = n `div` p
+\end{minted}
+
+Con los datos del enunciado:
+
+\begin{minted}[frame=single, label={Calculando p y q}]{haskell}
+*Main> get_pq 48478872564493742276963 12 37659670402359614687722
+(159497098847,303948303229)
+*Main> (p,q) = get_pq 48478872564493742276963 12 37659670402359614687722
+*Main> p*q == 48478872564493742276963
+True
+\end{minted}
+
 \end{document}

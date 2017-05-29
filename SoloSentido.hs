@@ -87,10 +87,9 @@ find_primitive_root p = head $ dropWhile (\x -> not $ is_primitive_root p x) pri
         primos = filter (miller_rabin) [2..p-2]
 
 inverso_nacimiento :: (Integral a, Random a) => a -> a -> a
-inverso_nacimiento id birthday = baby_s_giant_s a birthday p
+inverso_nacimiento id birthday = exponential_zn a birthday p
     where
-        p = head $ dropWhile (\x -> not (miller_rabin x)) $ randomRs (id, id*2)
-                 $ mkStdGen (174345884)
+        p = head $ dropWhile (\x -> not (miller_rabin x)) [id..id*2]
         a = find_primitive_root p
 
 {-
@@ -103,11 +102,8 @@ Sea n = 48478872564493742276963. Sabemos que
 f(12) = 144= f(37659670402359614687722). Usando esta información, calcula $p$ 
 y $q$ (mirar la demostración de "_Lecture Notes on Cryptography_", Lemma 2.43.
 -}
-get_pq :: (Integral a, Random a) => a -> a -> a
-get_pq n a
-    | x /= y    = z
-    | otherwise = get_pq n a
-        where
-            x       = fst $ randomR(1,n) $ mkStdGen (184841356516766)
-            y       = exponential_zn x 2 n
-            (z,_,_) = extended_euclides (x-y) n
+get_pq :: (Integral a, Random a) => a -> a -> a -> (a,a)
+get_pq n x y = (p,q)
+    where
+        (p,_,_) = extended_euclides (x-y) n
+        q       = n `div` p
