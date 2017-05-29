@@ -77,7 +77,7 @@ $$f:\mathbb{Z}_p \rightarrow \mathbb{Z}_p, x\mapsto\alpha^x$$
 Calcula el inverso de tu fecha de nacimiento con el formato AAAAMMDD.
 -}
 is_primitive_root :: (Integral a, Random a) => a -> a -> Bool
-is_primitive_root p a = (a `mod` p) /= (p-1) && (a^p2 `mod` p) == (p-1)
+is_primitive_root p a = exponential_zn a p2 p == (p-1)
     where
         p2 = (p - 1) `div` 2
 
@@ -86,9 +86,28 @@ find_primitive_root p = head $ dropWhile (\x -> not $ is_primitive_root p x) pri
     where
         primos = filter (miller_rabin) [2..p-2]
 
-inverso_nacimiento :: (Integral a, Random a) => a -> a
-inverso_nacimiento id = a
+inverso_nacimiento :: (Integral a, Random a) => a -> a -> a
+inverso_nacimiento id birthday = baby_s_giant_s a birthday p
     where
         p = head $ dropWhile (\x -> not (miller_rabin x)) $ randomRs (id, id*2)
                  $ mkStdGen (174345884)
         a = find_primitive_root p
+
+{-
+En lo que sigue, p y q son enteros primos, y n = pq.
+
+Ejercicio 3
+
+Sea f:Z_n -> Z_n la función de Rabin: f(x) = x^2. 
+Sea n = 48478872564493742276963. Sabemos que 
+f(12) = 144= f(37659670402359614687722). Usando esta información, calcula $p$ 
+y $q$ (mirar la demostración de "_Lecture Notes on Cryptography_", Lemma 2.43.
+-}
+get_pq :: (Integral a, Random a) => a -> a -> a
+get_pq n a
+    | x /= y    = z
+    | otherwise = get_pq n a
+        where
+            x       = fst $ randomR(1,n) $ mkStdGen (184841356516766)
+            y       = exponential_zn x 2 n
+            (z,_,_) = extended_euclides (x-y) n
