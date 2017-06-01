@@ -275,29 +275,35 @@ find_primitive_root p = head $ dropWhile (\x -> not $ is_primitive_root p x) pri
         primos = filter (miller_rabin) [2..p-2]
 \end{minted}
 
-\subsection{\textcolor{azul}Calculando $f$}
-Una vez hemos calculado $\alpha$, ahora pasamos a calcular la función $f$ definida:
+\subsection{\textcolor{azul}Calculando el inverso de $f$}
+Una vez hemos calculado $\alpha$, ahora pasamos a calcular el inverso de la función $f$ definida:
 
 \begin{displaymath}
 f: \mathbb{Z}_p \rightarrow \mathbb{Z}_p, \qquad\ x \rightarrow \alpha^x
 \end{displaymath}
 
-donde $x$ es una fecha de nacimiento en formato $AAAAMMDD$. Dicha función se corresponde con el \textit{\textcolor{azul}{exponente modular}} que ya fue implementado en la práctica 1.
+donde $x$ es una fecha de nacimiento en formato $AAAAMMDD$. El inverso de $f$ se corresponde con el \textit{\textcolor{azul}{Baby Step Giant Step}} que ya fue implementado en la práctica 1.
 
 \begin{minted}[frame=single, label={Calculando el inverso de una fecha de nacimiento}]{haskell}
 inverso_nacimiento :: (Integral a, Random a) => a -> a -> a
-inverso_nacimiento id birthday = exponential_zn a birthday p
+inverso_nacimiento id birthday = baby_s_giant_s a birthday p
     where
         p = head $ dropWhile (\x -> not (miller_rabin x)) [id..id*2]
         a = find_primitive_root p
 \end{minted}
 
-En mi caso, mi DNI es 75929776 y mi fecha de nacimiento, 19950207. El inverso de mi fecha de nacimiento es 38071826.
+En mi caso, mi DNI es 75929776 y mi fecha de nacimiento, 19950207. El inverso de mi fecha de nacimiento es 67186975. Para comprobar que está bien, elevo $\alpha$ a dicho inverso, para obtener mi fecha de nacimiento.
 
 \begin{minted}[frame=single, label={Inverso de mi fecha de nacimiento}]{haskell}
-*Main> inverso_nacimiento 75929776 19950207
-38071826
-*Main>
+*Main> let id = 75929776
+*Main> let birthday = 19950207
+*Main> let i = inverso_nacimiento id birthday
+*Main> i
+67186975
+*Main> let p = head $ dropWhile (\x -> not (miller_rabin x)) [id..id*2]
+*Main> let a = find_primitive_root p
+*Main> exponential_zn a i p
+19950207
 \end{minted}
 
 \section{\textcolor{azul}Ejercicio 3}

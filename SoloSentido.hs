@@ -87,7 +87,7 @@ find_primitive_root p = head $ dropWhile (\x -> not $ is_primitive_root p x) pri
         primos = filter (miller_rabin) [2..p-2]
 
 inverso_nacimiento :: (Integral a, Random a) => a -> a -> a
-inverso_nacimiento id birthday = exponential_zn a birthday p
+inverso_nacimiento id birthday = baby_s_giant_s a birthday p
     where
         p = head $ dropWhile (\x -> not (miller_rabin x)) [id..id*2]
         a = find_primitive_root p
@@ -107,3 +107,31 @@ get_pq n x y = (p,q)
     where
         (p,_,_) = extended_euclides (x-y) n
         q       = n `div` p
+
+{-
+Ejercicio 4
+
+Elige a_0 y a_1 dos cuadrados arbitrarios módulo n (n como en el Ejercicio 3). 
+
+Sea h: Z_2 x (Z_n)^*, h(b,x) = x^2a_0^ba_1^{1 - b}
+
+Usa la función de Merkle-Damgard para implentar una función resumen tomando 
+h como función de compresión (esta h fue definida por Glodwasser, Micali y Rivest). 
+Los parámetros a_0, a_1 y n se hacen públicos (la función debería admitir un 
+parámtero en el que venga especificado el vector inicial).
+-}
+gen_md_params :: (Integral a, Random a) => a -> String -> (a,a,[Int])
+gen_md_params n s = (a0, a1, b)
+    where
+        b  = binary_encoding s
+        l  = take 2 $ randomRs (1,n-1) $ mkStdGen (181876888)
+        a0 = exponential_zn (head l) 2 n
+        a1 = exponential_zn (last l) 2 n
+
+merkle_damgard :: (Integral a, Random a) => (a, a, a) -> a -> [Int] -> a
+merkle_damgard _ x []             = x
+merkle_damgard (n,a0,a1) x (bs:b) = merkle_damgard (n,a1,a0) x' b
+    where
+        x2 = exponential_zn x 2 n
+        b1 = (1 - bs) `mod` 2 
+        x' = (x2 * (a0^bs) * (a1^b1)) `mod` n
