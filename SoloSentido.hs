@@ -133,5 +133,18 @@ merkle_damgard _ x []             = x
 merkle_damgard (n,a0,a1) x (bs:b) = merkle_damgard (n,a1,a0) x' b
     where
         x2 = exponential_zn x 2 n
-        b1 = (1 - bs) `mod` 2 
+        b1 = 1 - bs
         x' = (x2 * (a0^bs) * (a1^b1)) `mod` n
+
+{-
+Ejercicio 5
+
+Sea p el menor primo entero mayor o igual que tu número de identidad, y sea q el
+primer primo mayor o igual que tu fecha de nacimiento (AAAAMMDD). Selecciona e tal
+que gcd(e, (p-1)(q-1)) = 1. Define la función RSA
+
+f: Z_n -> Z_n, x -> x^e
+
+Calcula el inverso de 1234567890
+-}
+

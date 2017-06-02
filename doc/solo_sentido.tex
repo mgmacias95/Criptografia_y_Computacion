@@ -360,7 +360,7 @@ merkle_damgard _ x []             = x
 merkle_damgard (n,a0,a1) x (bs:b) = merkle_damgard (n,a1,a0) x' b
     where
         x2 = exponential_zn x 2 n
-        b1 = (1 - bs) `mod` 2 
+        b1 = 1 - bs
         x' = (x2 * (a0^bs) * (a1^b1)) `mod` n
 \end{minted}
 
