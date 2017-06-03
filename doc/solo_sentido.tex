@@ -389,4 +389,57 @@ Por ejemplo, el hash obtenido para mensaje ``hola'' es:
 12121740077984225565220
 \end{minted}
 
+\section{\textcolor{azul}Ejercicio 5}
+\textit{Sea $p$ el menor primo entero mayor o igual que tu número de identidad y sea $q$ el primer primo mayor o igual que tu fecha de nacimiento (AAAAMMDD). Selecciona $e$ tal que $gcd(e, (p-1)(q-1)) = 1$. Define la \textcolor{azul}{\textbf{función RSA}}}
+
+\begin{displaymath}
+    f: \mathbb{Z}_n \rightarrow \mathbb{Z}_n, \qquad\ x \rightarrow x^e
+\end{displaymath}
+
+\textit{Calcula el \textbf{\textcolor{azul}{inverso}} de $1234567890$.
+}
+
+Un mensaje en RSA se cifra usando el número $e$ calculado:
+
+\begin{displaymath}
+    c = m^e \pmod n \qquad\ n = p\cdot q
+\end{displaymath}
+
+El proceso de cifrado es \textit{\textcolor{azul}{inverso}} al de descifrado,
+
+\begin{displaymath}
+    m = c^d \pmod n
+\end{displaymath}
+
+Por tanto, cuando el enunciado pide calcular el inverso de un número, está pidiendo que lo ``descifremos''. Para ello, tenemos que calcular $d$:
+
+\begin{displaymath}
+    d \cdot e \equiv 1 \pmod{\phi (n)} \; \longrightarrow \; d = e^{-1} \pmod{\phi (n)}
+\end{displaymath}
+
+Mi implementación en Haskell:
+
+\begin{minted}[frame=single, label={Inverso RSA}]{haskell}
+inverso_rsa :: (Integral a, Random a) => a -> a -> a -> (a,a)
+inverso_rsa id birthday msg = (c, exponential_zn c e n)
+    where
+        p     = find_next_prime id
+        q     = find_next_prime birthday
+        phi_n = (p-1)*(q-1)
+        e     = head $ dropWhile (\x -> not $ is_prime_relative x phi_n) [2..phi_n]
+        d     = inverse e phi_n
+        n     = p*q
+        c     = exponential_zn msg d n
+\end{minted}
+
+Calculo tanto el inverso de $1234567890$ como su ``cifrado'' para comprobar que la operación se realiza correctamente.
+
+\begin{minted}[frame=single, label={Probando el inverso RSA}]{haskell}
+*Main> inverso_rsa 20079894 19951128 1234567890
+(133428684506750,1234567890)
+*Main> 
+\end{minted}
+
+Como se ve, el inverso se ha calculado correctamente, pues devuelvo el mismo mensaje, $1234567890$.
+
 \end{document}

@@ -150,11 +150,13 @@ f: Z_n -> Z_n, x -> x^e
 
 Calcula el inverso de 1234567890
 -}
-inverso_rsa :: (Integral a, Random a) => a -> a -> a -> a
-inverso_rsa id birthday msg = exponential_zn msg d (p*q)
+inverso_rsa :: (Integral a, Random a) => a -> a -> a -> (a,a)
+inverso_rsa id birthday msg = (c, exponential_zn c e n)
     where
         p     = find_next_prime id
         q     = find_next_prime birthday
         phi_n = (p-1)*(q-1)
         e     = head $ dropWhile (\x -> not $ is_prime_relative x phi_n) [2..phi_n]
-        d     = inverse e phi_n 
+        d     = inverse e phi_n
+        n     = p*q
+        c     = exponential_zn msg d n
