@@ -86,10 +86,13 @@ find_primitive_root p = head $ dropWhile (\x -> not $ is_primitive_root p x) pri
     where
         primos = filter (miller_rabin) [2..p-2]
 
+find_next_prime :: (Integral a, Random a) => a -> a
+find_next_prime p = head $ dropWhile (\x -> not (miller_rabin x)) [p..p*2]
+
 inverso_nacimiento :: (Integral a, Random a) => a -> a -> a
 inverso_nacimiento id birthday = baby_s_giant_s a birthday p
     where
-        p = head $ dropWhile (\x -> not (miller_rabin x)) [id..id*2]
+        p = find_next_prime p
         a = find_primitive_root p
 
 {-
@@ -147,4 +150,11 @@ f: Z_n -> Z_n, x -> x^e
 
 Calcula el inverso de 1234567890
 -}
-
+inverso_rsa :: (Integral a, Random a) => a -> a -> a -> a
+inverso_rsa id birthday msg = exponential_zn msg d (p*q)
+    where
+        p     = find_next_prime id
+        q     = find_next_prime birthday
+        phi_n = (p-1)*(q-1)
+        e     = head $ dropWhile (\x -> not $ is_prime_relative x phi_n) [2..phi_n]
+        d     = inverse e phi_n 

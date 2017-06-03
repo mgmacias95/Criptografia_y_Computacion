@@ -285,10 +285,13 @@ f: \mathbb{Z}_p \rightarrow \mathbb{Z}_p, \qquad\ x \rightarrow \alpha^x
 donde $x$ es una fecha de nacimiento en formato $AAAAMMDD$. El inverso de $f$ se corresponde con el \textit{\textcolor{azul}{Baby Step Giant Step}} que ya fue implementado en la práctica 1.
 
 \begin{minted}[frame=single, label={Calculando el inverso de una fecha de nacimiento}]{haskell}
+find_next_prime :: (Integral a, Random a) => a -> a
+find_next_prime p = head $ dropWhile (\x -> not (miller_rabin x)) [p..p*2]
+
 inverso_nacimiento :: (Integral a, Random a) => a -> a -> a
 inverso_nacimiento id birthday = baby_s_giant_s a birthday p
     where
-        p = head $ dropWhile (\x -> not (miller_rabin x)) [id..id*2]
+        p = find_next_prime p
         a = find_primitive_root p
 \end{minted}
 
