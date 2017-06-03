@@ -312,7 +312,7 @@ En mi caso, mi DNI es 75929776 y mi fecha de nacimiento, 19950207. El inverso de
 \section{\textcolor{azul}Ejercicio 3}
 \textit{En lo que sigue, $p$ y $q$ son enteros primos, y $n = p \cdot q$.}
 
-\textit{Sea $f: \mathbb{Z}_n \rightarrow \mathbb{Z}_n$ la \textit{\textcolor{azul}función de Rabin}: $f(x) = x^2$. Sea $n = 48478872564493742276963$. Sabemos que $f(12) = 144= f(37659670402359614687722)$. Usando esta información, calcula $p$ y $q$ (mirar la demostración del lema 2.43 del libro ``Lecture Notes on Cryptography'').}
+\textit{Sea $f: \mathbb{Z}_n \rightarrow \mathbb{Z}_n$ la \textbf{\textcolor{azul}{función de Rabin}}: $f(x) = x^2$. Sea $n = 48478872564493742276963$. Sabemos que $f(12) = 144= f(37659670402359614687722)$. Usando esta información, \textbf{\textcolor{azul}{calcula $p$ y $q$}} (mirar la demostración del lema 2.43 del libro ``Lecture Notes on Cryptography'').}
 
 Si $gcd(x-y,n)$ es un divisor no trivial de $n$ (por ejemplo, $p$), $q$ será simplemente dividir $\frac{n}{p}$. Como en el enunciado ya nos dan $x$ e $y$, ya lo tenemos todo hecho:
 
@@ -441,5 +441,53 @@ Calculo tanto el inverso de $1234567890$ como su ``cifrado'' para comprobar que 
 \end{minted}
 
 Como se ve, el inverso se ha calculado correctamente, pues devuelvo el mismo mensaje, $1234567890$.
+
+\section{\textcolor{azul}Ejercicio 6}
+\textit{Sea $n=50000000385000000551$, y sabemos que una inversa de $\mathbb{Z}_n \rightarrow \mathbb{Z}_n, \; x \rightarrow x^5$ es $x \rightarrow x^{10000000074000000101}$ (esto es, conoces tanto la llave pública como la privada de la función RSA). \textbf{\textcolor{azul}{Encuentra $p$ y $q$}} usando el método explicado en ``Notes on Cryptography''. Compara este método con el algoritmo de \textbf{\textcolor{azul}{Miller-Rabin}} y el ejercicio 3.}
+
+El algoritmo implementado es el siguiente:
+
+\begin{minted}[frame=single, label={Find p and q}]{haskell}
+find_pq_rsa :: (Integral a, Random a) => a -> a -> a -> (a,a)
+find_pq_rsa n e d
+    | g /= 1     = (g, n `div` g)
+    | abs y == 1 = (0,0)
+    | otherwise  = find_pq_rsa_aux n (exponential_zn y 2 n) y
+        where
+            b       = snd $ descomposicion_2us (d*e - 1) 0
+            x       = fst $ randomR (0,n) $ mkStdGen (51518732)
+            (g,_,_) = extended_euclides x n
+            y       = exponential_zn x b n
+
+find_pq_rsa_aux :: (Integral a, Random a) => a -> a -> a -> (a,a)
+find_pq_rsa_aux n (-1) z = (0,0)
+find_pq_rsa_aux n 1 z    = (p,q)
+    where
+        (p,_,_) = extended_euclides (z+1) n
+        (q,_,_) = extended_euclides (z-1) n
+find_pq_rsa_aux n y z    = find_pq_rsa_aux n (exponential_zn y 2 n) y 
+\end{minted}
+
+Si el algoritmo falla, devolverá la tupla $(0,0)$.
+
+\begin{minted}[frame=single, label={Probando el encontrar p y q}]{haskell}
+*Main> find_pq_rsa 589 13 7
+(19,31)
+*Main> find_pq_rsa 50000000385000000551 5 10000000074000000101
+(10000000019,5000000029)
+*Main> 19*31
+589
+*Main> 10000000019*5000000029
+50000000385000000551
+*Main> 
+\end{minted}
+
+Como se ve, el algoritmo funciona correctamente. 
+
+Tal y como se explica en el libro \textit{\textcolor{azul}{Notes on Cryptography}}, la probabilidad de factorizar $N$ escogiendo un $x$ aleatorio es de $1/2$, por tanto, ejecutando el algoritmo varias veces podríamos encontrar una solución.
+
+En el ejercicio 3, necesitábamos tener un algoritmo que, dados $n$ y $a$ donde $a$ es un cuadrado módulo $n$, calculase $y$ tal que $a \equiv y^2 \pmod n$. En cambio, con este algoritmo necesitamos $e$ y $d$ tales que $e \cdot d \equiv 1 \pmod n$, es decir, que ambos sean inversos módulo $n$. En ambos ejercicios hemos obtenido estos datos de antemano.
+
+En el caso del ejercicio 3, una vez obtenidos $x$ y $y$, la operación para obtener $p$ y $q$ es bastante sencilla. En este último caso, la operación es sencilla únicamente si $gcd(x,n) = 1$, esto es algo bastante raro, por lo que podemos decir que \textit{\textcolor{azul}{en cuanto a sencillez, gana el ejercicio 3}}.
 
 \end{document}

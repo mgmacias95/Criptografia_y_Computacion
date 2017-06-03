@@ -160,3 +160,31 @@ inverso_rsa id birthday msg = (c, exponential_zn c e n)
         d     = inverse e phi_n
         n     = p*q
         c     = exponential_zn msg d n
+
+{-
+Ejercicio 6
+
+Sea n=50000000385000000551, y sabemos que una inversa de Z_n -> Z_n, x -> x^5 es
+x -> x^10000000074000000101 (esto es, conoces tanto la llave pública como la 
+privada de la función RSA). Encuentra p y q usando el método explicado en "Notes
+on Cryptography", página 92. Compara este procedimiento con el algoritmo de 
+Miller-Rabin y el ejercicio 3.
+-}
+find_pq_rsa :: (Integral a, Random a) => a -> a -> a -> (a,a)
+find_pq_rsa n e d
+    | g /= 1     = (g, n `div` g)
+    | abs y == 1 = (0,0)
+    | otherwise  = find_pq_rsa_aux n (exponential_zn y 2 n) y
+        where
+            b       = snd $ descomposicion_2us (d*e - 1) 0
+            x       = fst $ randomR (0,n) $ mkStdGen (51518732)
+            (g,_,_) = extended_euclides x n
+            y       = exponential_zn x b n
+
+find_pq_rsa_aux :: (Integral a, Random a) => a -> a -> a -> (a,a)
+find_pq_rsa_aux n (-1) z = (0,0)
+find_pq_rsa_aux n 1 z    = (p,q)
+    where
+        (p,_,_) = extended_euclides (z+1) n
+        (q,_,_) = extended_euclides (z-1) n
+find_pq_rsa_aux n y z    = find_pq_rsa_aux n (exponential_zn y 2 n) y 
