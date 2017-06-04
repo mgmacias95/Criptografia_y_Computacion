@@ -133,11 +133,10 @@ gen_md_params n s = (a0, a1, b)
 
 merkle_damgard :: (Integral a, Random a) => (a, a, a) -> a -> [Int] -> a
 merkle_damgard _ x []             = x
-merkle_damgard (n,a0,a1) x (bs:b) = merkle_damgard (n,a1,a0) x' b
+merkle_damgard (n,a0,a1) x (bs:b) = merkle_damgard (n,a0,a1) x' b
     where
-        x2 = exponential_zn x 2 n
         b1 = 1 - bs
-        x' = (x2 * (a0^bs) * (a1^b1)) `mod` n
+        x' = ((x^2) * (a0^bs) * (a1^b1)) `mod` n
 
 {-
 Ejercicio 5
@@ -188,3 +187,27 @@ find_pq_rsa_aux n 1 z    = (p,q)
         (p,_,_) = extended_euclides (z+1) n
         (q,_,_) = extended_euclides (z-1) n
 find_pq_rsa_aux n y z    = find_pq_rsa_aux n (exponential_zn y 2 n) y 
+
+{-
+Ejercicio 7
+
+En este ejercicio se pide implementar un sistema de firma digital y verificación
+de la firma. Se puede elegir entre RSA o DSS.
+
+Al igual que antes, debe realizar tres tareas: generación de claves (ejercicios
+anteriores), generación de clave de firma y verificación de la firma.
+
+Para la generación de la firma, se le introducirá un mensaje a cifrar (Texto) y
+el fichero con la clave (privada), y deberá generar una firma, que se guardará en
+un fichero de texto.
+
+Puesto que lo que realmente se firma no es el mensaje, sino un resumen del 
+mensaje, hay que generar un resumen de dicho mensaje. Para esto emplearemos la
+función SHA1 (se pueden otras funciones resumen). Cualquiera de las 
+implementaciones de esta función que hay en la red puede ser usada.
+
+Para la verificación de la firma, se introduce el mensaje (fichero) que se ha
+firmado, un fichero con la firma (con el mismo formato que el apartado anterior)
+y un fichero con la clave (pública). Deberá responder si la firma es o no
+válida.
+-}

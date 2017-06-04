@@ -360,11 +360,10 @@ Una vez he generado los elementos necesarios, llamo a la siguiente función, que
 \begin{minted}[frame=single, label={Merkle Damgård}]{haskell}
 merkle_damgard :: (Integral a, Random a) => (a, a, a) -> a -> [Int] -> a
 merkle_damgard _ x []             = x
-merkle_damgard (n,a0,a1) x (bs:b) = merkle_damgard (n,a1,a0) x' b
+merkle_damgard (n,a0,a1) x (bs:b) = merkle_damgard (n,a0,a1) x' b
     where
-        x2 = exponential_zn x 2 n
         b1 = 1 - bs
-        x' = (x2 * (a0^bs) * (a1^b1)) `mod` n
+        x' = ((x^2) * (a0^bs) * (a1^b1)) `mod` n
 \end{minted}
 
 Hay varios puntos a destacar sobre esta función:
@@ -386,7 +385,7 @@ Por ejemplo, el hash obtenido para mensaje ``hola'' es:
 *Main> let n = 48478872564493742276963
 *Main> let (a0,a1,b) = gen_md_params n "hola"
 *Main> merkle_damgard (n,a0,a1) 58 b
-12121740077984225565220
+25379218943840191433672
 \end{minted}
 
 \section{\textcolor{azul}Ejercicio 5}
