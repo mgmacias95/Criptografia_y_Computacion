@@ -3,6 +3,11 @@ import Data.List.Split (chunksOf)
 import System.Random (Random, randomRs, mkStdGen, randomR)
 import AritmeticaModular
 import CifradoFlujo (binary_encoding, binary_decoding)
+import Crypto.Hash.SHA1 (hash)
+import Data.ByteString.Char8 (unpack, pack)
+import Data.ByteString.Base16 (encode)
+import Numeric (readInt)
+import Data.Char (isHexDigit, digitToInt)
 
 {-
 Ejercicio 1.
@@ -211,3 +216,6 @@ firmado, un fichero con la firma (con el mismo formato que el apartado anterior)
 y un fichero con la clave (pública). Deberá responder si la firma es o no
 válida.
 -}
+sha1_hash :: (Integral a) => String -> a
+sha1_hash msg = fst $ head $ readInt 16 isHexDigit digitToInt $ unpack $
+                encode $ hash $ pack msg
