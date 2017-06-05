@@ -9,6 +9,16 @@ import Data.ByteString.Base16 (encode)
 import Numeric (readInt)
 import Data.Char (isHexDigit, digitToInt)
 
+-- ternary operator
+data Cond a = a :? a
+ 
+infixl 0 ?
+infixl 1 :?
+ 
+(?) :: Bool -> Cond a -> a
+True  ? (x :? _) = x
+False ? (_ :? y) = y
+
 {-
 Ejercicio 1.
 Sea (a1,...,ak) una secuencia super-creciente de números positivos (la suma de 
@@ -219,3 +229,38 @@ válida.
 sha1_hash :: (Integral a) => String -> a
 sha1_hash msg = fst $ head $ readInt 16 isHexDigit digitToInt $ unpack $
                 encode $ hash $ pack msg
+
+dss_keys :: (Integral a, Random a) => (a,a,a,a,a)
+dss_keys = (p,q,a,y,x)
+    where
+        q      = head $ dropWhile (miller_rabin) $ randomRs (2^159,2^160) $ 
+                 mkStdGen (18777349)
+        (l,g)  = randomR (512, 1024) $ mkStdGen (78878965)
+        (i,g') = randomR (l-161, l-160) g
+        c      = odd i ? i+1 :? i
+        i'     = head $ dropWhile (\x -> miller_rabin ((c+x)*q + 1)) [2,4..q-1]
+        p      = (c+i')*q + 1
+        (b,f)  = randomR (2,p-2) g'
+        i''    = head $ dropWhile (\x -> exponential_zn (b+x) 
+                 ((p-1) `div` q) p == 1) [0..p-1]
+        a      = exponential_zn (b+i'') (p-1 `div` q) p
+        x      = fst $ randomR (2,q-2) f
+        y      = exponential_zn a x p
+
+
+firma_dss :: (Integral a, Random a) => String -> a -> (a,a,a,a) -> (a,a)
+firma_dss m x (p,q,a,y) = (r,s)
+    where
+        h = sha1_hash m
+        k = fst $ randomR (2, q-2) $ mkStdGen (1854877354)
+        r = mod q $ exponential_zn a k p
+        s = (h + x*r) * (inverse k q) `mod` q
+
+check_firma_dss :: (Integral a, Random a) => String -> (a, a) -> (a,a,a,a) -> Bool
+check_firma_dss m (r,s) (p,q,a,y) = r == r'
+    where
+        h  = sha1_hash m
+        i  = (inverse s q)
+        u  = h * i `mod` q
+        v  = r * i `mod` q
+        r' = (exponential_zn a u p) * (exponential_zn y v p) `mod` q 
