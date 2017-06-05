@@ -230,22 +230,19 @@ sha1_hash :: (Integral a) => String -> a
 sha1_hash msg = fst $ head $ readInt 16 isHexDigit digitToInt $ unpack $
                 encode $ hash $ pack msg
 
+-- FIRMA DSS
 dss_keys :: (Integral a, Random a) => (a,a,a,a,a)
 dss_keys = (p,q,a,y,x)
     where
-        q      = head $ dropWhile (miller_rabin) $ randomRs (2^159,2^160) $ 
-                 mkStdGen (18777349)
-        (l,g)  = randomR (512, 1024) $ mkStdGen (78878965)
-        (i,g') = randomR (l-161, l-160) g
-        c      = odd i ? i+1 :? i
-        i'     = head $ dropWhile (\x -> miller_rabin ((c+x)*q + 1)) [2,4..q-1]
-        p      = (c+i')*q + 1
-        (b,f)  = randomR (2,p-2) g'
-        i''    = head $ dropWhile (\x -> exponential_zn (b+x) 
-                 ((p-1) `div` q) p == 1) [0..p-1]
-        a      = exponential_zn (b+i'') (p-1 `div` q) p
-        x      = fst $ randomR (2,q-2) f
-        y      = exponential_zn a x p
+        q = head $ dropWhile (\x -> not $ miller_rabin x) $ 
+            randomRs (2^159,2^160) $ mkStdGen (18777349)
+        t = fst $ randomR (0::Integer,8) $ mkStdGen (78878965)
+        p = head $ dropWhile (\x -> ((x-1) `mod` q) /= 0 && 
+            (not $ miller_rabin x)) [2^(511+64*t)..2^(512+64*t)]
+        i = head $ dropWhile (\x -> exponential_zn x ((p-1) `div` q) p == 1) [2..p-1]
+        a = exponential_zn i (p-1 `div` q) p
+        x = fst $ randomR (2,q-2) $ mkStdGen (555556)
+        y = exponential_zn a x p
 
 
 firma_dss :: (Integral a, Random a) => String -> a -> (a,a,a,a) -> (a,a)
@@ -253,14 +250,35 @@ firma_dss m x (p,q,a,y) = (r,s)
     where
         h = sha1_hash m
         k = fst $ randomR (2, q-2) $ mkStdGen (1854877354)
-        r = mod q $ exponential_zn a k p
-        s = (h + x*r) * (inverse k q) `mod` q
+        r = (exponential_zn a k p) `mod` q
+        s = ((h + x*r) * (inverse k q)) `mod` q
 
 check_firma_dss :: (Integral a, Random a) => String -> (a, a) -> (a,a,a,a) -> Bool
 check_firma_dss m (r,s) (p,q,a,y) = r == r'
     where
         h  = sha1_hash m
         i  = (inverse s q)
-        u  = h * i `mod` q
-        v  = r * i `mod` q
-        r' = (exponential_zn a u p) * (exponential_zn y v p) `mod` q 
+        u  = (h * i) `mod` q
+        v  = (r * i) `mod` q
+        r' = ((exponential_zn a u p) * (exponential_zn y v p) `mod` p) `mod` q 
+
+-- FIRMA RSA
+rsa_keys :: (Integral a, Random a) => (a,a,a)
+rsa_keys = (n,e,d)
+    where
+        p   = find_next_prime $ fst $ randomR (2^10,2^11) $ mkStdGen (666)
+        q   = find_next_prime $ fst $ randomR (2^13,2^14) $ mkStdGen (1554)
+        n   = p*q
+        phi = (p-1)*(q-1)
+        e   = head $ dropWhile (\x -> not $ is_prime_relative x phi) [2..phi]
+        d   = inverse e phi
+
+firma_rsa :: (Integral a, Random a) => String -> a -> a -> a
+firma_rsa m d n = exponential_zn h d n
+    where
+        h = sha1_hash m
+
+check_firma_rsa :: (Integral a, Random a) => String -> (a,a) -> a -> Bool
+check_firma_rsa m (n,e) f = h `mod` n == exponential_zn f e n
+    where
+        h = sha1_hash m
