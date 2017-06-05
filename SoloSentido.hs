@@ -235,12 +235,13 @@ dss_keys :: (Integral a, Random a) => (a,a,a,a,a)
 dss_keys = (p,q,a,y,x)
     where
         q = head $ dropWhile (\x -> not $ miller_rabin x) $ 
-            randomRs (2^159,2^160) $ mkStdGen (18777349)
+            randomRs (2^5,2^6) $ mkStdGen (18777349)
         t = fst $ randomR (0::Integer,8) $ mkStdGen (78878965)
-        p = head $ dropWhile (\x -> ((x-1) `mod` q) /= 0 && 
-            (not $ miller_rabin x)) [2^(511+64*t)..2^(512+64*t)]
-        i = head $ dropWhile (\x -> exponential_zn x ((p-1) `div` q) p == 1) [2..p-1]
-        a = exponential_zn i (p-1 `div` q) p
+        p = head $ dropWhile (\x -> (not $ miller_rabin x) || (((x-1) `mod` q) /= 0)) 
+            [2^(12+64*t)..2^(13+64*t)]
+        g = head $ dropWhile (\x -> exponential_zn x ((p-1) `div` q) p == 1) $ 
+            randomRs (2,p-1) $ mkStdGen (44451566)
+        a = exponential_zn g ((p-1) `div` q) p
         x = fst $ randomR (2,q-2) $ mkStdGen (555556)
         y = exponential_zn a x p
 
@@ -254,13 +255,15 @@ firma_dss m x (p,q,a,y) = (r,s)
         s = ((h + x*r) * (inverse k q)) `mod` q
 
 check_firma_dss :: (Integral a, Random a) => String -> (a, a) -> (a,a,a,a) -> Bool
-check_firma_dss m (r,s) (p,q,a,y) = r == r'
-    where
-        h  = sha1_hash m
-        i  = (inverse s q)
-        u  = (h * i) `mod` q
-        v  = (r * i) `mod` q
-        r' = ((exponential_zn a u p) * (exponential_zn y v p) `mod` p) `mod` q 
+check_firma_dss m (r,s) (p,q,a,y)
+    | r >= q || r <= 0 || s >= q || s <= 0 = False
+    | otherwise                            = r == r'
+        where
+            h  = sha1_hash m
+            i  = inverse s q
+            u  = (h * i) `mod` q
+            v  = (r * i) `mod` q
+            r' = ((exponential_zn a u p) * (exponential_zn y v p) `mod` p) `mod` q 
 
 -- FIRMA RSA
 rsa_keys :: (Integral a, Random a) => (a,a,a)
