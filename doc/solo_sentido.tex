@@ -491,4 +491,169 @@ En el caso del ejercicio 3, una vez obtenidos $x$ y $y$, la operación para obte
 
 Ahora bien, en el ejercicio 3 hay que estar escogiendo $x$ aleatorios hasta que se dé la condición mientras que en este último, una vez escogido un $x$ aleatorio que se usa para calcular el primer $y$, el resto es simplemente elevar $y$ al cuadrado, con la garantía de que sólo se hace $a$ veces como mucho, donde $d \cdot e - 1 = 2^a \cdot b$.
 
+\section{\textcolor{azul}Ejercicio 7}
+\textit{En este ejercicio se pide implementar un \textbf{\textcolor{azul}{sistema de firma digital y verificación de la firma}}. Se puede elegir entre firma \textbf{\textcolor{azul}{RSA}} o \textbf{\textcolor{azul}{DSS}}.}
+
+\textit{Al igual que antes, se deben realizar tres tareas: \textbf{\textcolor{azul}{generación de claves}}, \textbf{\textcolor{azul}{generación de firma}} y \textbf{\textcolor{azul}{verificación de la firma}}.}
+
+\textit{Para la generación de la firma, se le introducirá un mensaje a cifrar y la clave privada, y deberá generar una firma.}
+
+\textit{Puesto que lo que realmente se firma no es el mensaje, sino un resumen del mensaje, hay que generar un resumen de dicho mensaje. Para esto emplearemos la función \textbf{\textcolor{azul}{SHA1}}.}
+
+\textit{Para la verificación de la firma, se introduce el mensaje que se ha firmado, la firma y la clave pública. Deberá responder si la firma es válida o no.}
+
+%Antes de empezar, debo decir que no he podido calcular claves de gran tamaño debido a la poca potencia de mi ordenador.
+
+\subsection{\textcolor{azul}Resumen SHA1}
+Para hacer el resumen con SHA1, he usado la función \texttt{hash} del paquete de Haskell \texttt{Crypto.Hash.SHA1}. Dicha función recibe un \texttt{ByteString} (para pasar de \texttt{String} a \texttt{ByteString} y viceversa, uso las funciones \texttt{pack} y \texttt{unpack} respectivamente) y devuelve otro \texttt{ByteString} con el hash en binario. Uso la función \texttt{encode} del paquete \texttt{Data.ByteString.Base16} para pasar el hash a hexadecimal y, por último, lo convierto a base 10.
+
+\begin{minted}[frame=single, label={SHA1 en Haskell}]{haskell}
+import Crypto.Hash.SHA1 (hash)
+import Data.ByteString.Char8 (unpack, pack)
+import Data.ByteString.Base16 (encode)
+import Numeric (readInt)
+import Data.Char (isHexDigit, digitToInt)
+
+sha1_hash :: (Integral a) => String -> a
+sha1_hash msg = fst $ head $ readInt 16 isHexDigit digitToInt $ unpack $
+                encode $ hash $ pack msg
+\end{minted}
+
+\subsection{\textcolor{azul}Firma Digital RSA}
+\subsubsection{\textcolor{azul}Generación de claves}
+Los pasos que he seguido para generar unas claves RSA son:
+
+\begin{enumerate}
+    \item En primer lugar he obtenido de forma aleatoria los primos $p$ y $q$.
+    \item He calculado $n = p \cdot q$ y $\phi (n) = (p-1)\cdot (q-1)$.
+    \item He calculado $e$ tal que $gcd(e,\phi (n)) = 1$.
+    \item He calculado $d = e^{-1} \pmod{\phi (n)}$
+\end{enumerate}
+
+La clave pública es $(n,e)$ y la clave privada, $d$.
+
+\begin{minted}[frame=single,label={Generación de claves RSA}]{haskell}
+rsa_keys :: (Integral a, Random a) => (a,a,a)
+rsa_keys = (n,e,d)
+    where
+        p   = find_next_prime $ fst $ randomR (2^10,2^11) $ mkStdGen (666)
+        q   = find_next_prime $ fst $ randomR (2^13,2^14) $ mkStdGen (1554)
+        n   = p*q
+        phi = (p-1)*(q-1)
+        e   = head $ dropWhile (\x -> not $ is_prime_relative x phi) [2..phi]
+        d   = inverse e phi
+\end{minted}
+
+\subsubsection{\textcolor{azul}Generación de firma}
+Para generar una firma RSA de un mensaje $m$ he calculado 
+
+\begin{displaymath}
+    firma(m) = h(m)^d \pmod{n}
+\end{displaymath}
+
+donde $h(m)$ es el resumen SHA1 de $m$.
+
+\begin{minted}[frame=single,label={Generación de firma RSA}]{haskell}
+firma_rsa :: (Integral a, Random a) => String -> a -> a -> a
+firma_rsa m d n = exponential_zn h d n
+    where
+        h = sha1_hash m
+\end{minted}
+
+\subsubsection{\textcolor{azul}Verificación de firma}
+Para verificar la firma $firma(m)$ de un mensaje $m$ he calculado
+
+\begin{displaymath}
+    ver(m) = h(m)^e \pmod n
+\end{displaymath}
+
+Una vez he calculado $ver(m)$, he comprobado que $h(m) \pmod n = ver(m)$. Si ambas coinciden, la firma es válida.
+
+\begin{minted}[frame=single,label={Verificación de firma RSA}]{haskell}
+check_firma_rsa :: (Integral a, Random a) => String -> (a,a) -> a -> Bool
+check_firma_rsa m (n,e) f = h `mod` n == exponential_zn f e n
+    where
+        h = sha1_hash m
+\end{minted}
+
+\subsection{\textcolor{azul}Firma DSS}
+Para la implementación de la firma DSS me he basado en el capítulo 11.5.1 del libro ``Handbook of Applied Cryptography''.
+
+\subsubsection{\textcolor{azul}Generación de claves}
+Para generar las claves, he seguido los siguientes pasos:
+
+\begin{enumerate}
+    \item Tomar un primo $q$ aleatorio tal que $2^{159} < q < 2^{160}$.
+    \item Tomar un $t$ aleatorio tal que $0 \leq t \leq 8$.
+    \item Tomar un primo $p$ aleatorio tal que $2^{511+64t} < p < 2^{512+64t}$ y que $(p-1)$ divida a $q$.
+    \item Generar elementos $g \in \mathbb{Z}_p$ aleatorios hasta que $\alpha = g^{\frac{p-1}{q}} \neq 1$.
+    \item Tomar un $x$ aleatorio tal que $1 \leq x \leq q-1$.
+    \item Calcular $y = \alpha^x \pmod p$. 
+\end{enumerate}
+
+La clave pública serán los valores $(p,q,a,y)$ y la privada, $x$.
+
+\begin{minted}[frame=single, label={Generación de claves DSS}]{haskell}
+dss_keys :: (Integral a, Random a) => (a,a,a,a,a)
+dss_keys = (p,q,a,y,x)
+    where
+        q = head $ dropWhile (\x -> not $ miller_rabin x) $ 
+            randomRs (2^5,2^6) $ mkStdGen (18777349)
+        t = fst $ randomR (0::Integer,8) $ mkStdGen (78878965)
+        p = head $ dropWhile (\x -> (not $ miller_rabin x) || (((x-1) `mod` q) /= 0)) 
+            [2^(12+64*t)..2^(13+64*t)]
+        g = head $ dropWhile (\x -> exponential_zn x ((p-1) `div` q) p == 1) $ 
+            randomRs (2,p-1) $ mkStdGen (44451566)
+        a = exponential_zn g ((p-1) `div` q) p
+        x = fst $ randomR (2,q-2) $ mkStdGen (555556)
+        y = exponential_zn a x p
+\end{minted}
+
+\subsubsection{\textcolor{azul}Generación de firma}
+Para generar una firma DSS de un mensaje $m$ he seguido los siguientes pasos:
+
+\begin{enumerate}
+    \item Tomar un $k$ aleatorio tal que $0 < k < q$.
+    \item Calcular $k^{-1} \pmod q$.
+    \item Calcular $r = (\alpha^k \pmod p) \pmod q$.
+    \item Calcular $s = k^{-1} \cdot (h(m) + xr) \pmod q$.
+\end{enumerate}
+
+La firma será la tupla $(r,s)$.
+
+\begin{minted}[frame=single, label={Generación de firma DSS}]{haskell}
+firma_dss :: (Integral a, Random a) => String -> a -> (a,a,a,a) -> (a,a)
+firma_dss m x (p,q,a,y) = (r,s)
+    where
+        h = sha1_hash m
+        k = fst $ randomR (2, q-2) $ mkStdGen (1854877354)
+        r = (exponential_zn a k p) `mod` q
+        s = ((h + x*r) * (inverse k q)) `mod` q
+\end{minted}
+
+\subsubsection{\textcolor{azul}Verificación de firma}
+Para verificar la firma $(r,s)$ de un mensaje $m$ he seguido los siguientes pasos:
+
+\begin{enumerate}
+    \item En primer lugar compruebo que $0 < r < q$ y que $0 < s < q$. Si esto no se cumple, automáticamente descarto la validez de la firma.
+    \item En caso contrario, empiezo calculando $s^{-1} \pmod q$.
+    \item Después, calculo $u = (h(m) \cdot s^{-1}) \pmod q$ y $v = (r \cdot s^{-1}) \pmod q$.
+    \item Por último, calculo $r' = (\alpha^u \cdot y^v \pmod p) \pmod q$.
+\end{enumerate}
+
+Si $r$ y $r'$ coinciden, la firma será valida.
+
+\begin{minted}[frame=single, label={Verificación de firma DSS}]{haskell}
+check_firma_dss :: (Integral a, Random a) => String -> (a, a) -> (a,a,a,a) -> Bool
+check_firma_dss m (r,s) (p,q,a,y)
+    | r >= q || r <= 0 || s >= q || s <= 0 = False
+    | otherwise                            = r == r'
+        where
+            h  = sha1_hash m
+            i  = inverse s q
+            u  = (h * i) `mod` q
+            v  = (r * i) `mod` q
+            r' = ((exponential_zn a u p) * (exponential_zn y v p) `mod` p) `mod` q 
+\end{minted}
+
 \end{document}
