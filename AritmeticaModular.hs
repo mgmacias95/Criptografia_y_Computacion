@@ -128,6 +128,8 @@ module AritmeticaModular (extended_euclides, inverse, exponential_zn, descomposi
 
     Implementa el algoritmo paso enano-paso gigante para el cálculo de logaritmos
     discretos en Zp.
+
+    logaritmo en base 13 de 2 módulo 19 ---> baby_s_giant_s 13 2 19
     -}
     baby_step :: (Integral a, Random a) => a -> a -> a -> a -> Map a a
     baby_step a c p s = Map.fromList tabS
