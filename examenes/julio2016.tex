@@ -7,7 +7,6 @@
 \usepackage{enumerate}
 \usepackage[usenames, dvipsnames]{color}
 \usepackage{colortbl}
-\usepackage{minted}
 \usepackage[left=3cm, right=3cm]{geometry}
 \usepackage{cancel}
 \usepackage{graphicx}
@@ -111,54 +110,6 @@
     \end{displaymath}
 
     Por tanto, la solución final es \textcolor{morado}{$\mathbf{x^3 + x^2 + x}$}.
-
-    % Para definir un cuerpo, debemos definir la multiplicación y la suma entre sus elementos. En nuestro caso, para obtener un cuerpo finito con 16 elementos, tomamos un conjunto con cuatro elementos, $\{0,1,a,b\}$, y definimos:
-
-    % \begin{minipage}{0.5\textwidth}
-    %     \begin{tabular}{| >{\columncolor{morado}} c | c | c | c | c |}
-    %     \hline
-    %     \rowcolor{morado} \textcolor{white}{$+$} & \textcolor{white}{0} & \textcolor{white}{1} & \textcolor{white}{$a$} & \textcolor{white}{$b$} \\
-    %     \hline
-    %     \textcolor{white}{0} & 0 & 1 & $a$ & $b$ \\
-    %     \hline
-    %     \textcolor{white}{1} & 1 & 0 & $b$ & $a$ \\
-    %     \hline
-    %     \textcolor{white}{$a$} & $a$ & $b$ & 0 & 1 \\
-    %     \hline
-    %     \textcolor{white}{$b$} & $b$ & $a$ & 1 & 0 \\
-    %     \hline 
-    %     \end{tabular}
-    % \end{minipage}
-    % \begin{minipage}{0.5\textwidth}
-    %     \begin{tabular}{| >{\columncolor{morado}} c | c | c | c | c |}
-    %     \hline
-    %     \rowcolor{morado} \textcolor{white}{$\times$} & \textcolor{white}{0} & \textcolor{white}{1} & \textcolor{white}{$a$} & \textcolor{white}{$b$} \\
-    %     \hline
-    %     \textcolor{white}{0} & 0 & 0 & 0 & 0 \\
-    %     \hline 
-    %     \textcolor{white}{1} & 0 & 1 & $a$ & $b$ \\
-    %     \hline 
-    %     \textcolor{white}{$a$} & 0 & $a$ & $b$ & 1 \\
-    %     \hline 
-    %     \textcolor{white}{$b$} & 0 & $b$ & 1 & $a$ \\
-    %     \hline
-    %     \end{tabular}
-    % \end{minipage}
-
-    % Una vez tenemos definidas tanto la suma como la multiplicación, podemos pasar a calcular $1010 \times 0100$, o lo que es lo mismo $aa \times 10$
-
-    % \begin{displaymath}
-    %     \frac{
-    %         \begin{array}[b]{r}
-    %             a a \\
-    %      \times 1 0 
-    %         \end{array}
-    %     }{
-    %         ~~ a 0
-    %     }
-    % \end{displaymath}
-
-
 
     \item[Ejercicio 3] \textit{Sea $\alpha$ un \textbf{\textcolor{morado}{elemento primitivo}} de $\mathbb{Z}_{59}^*$. Encuentra \textbf{\textcolor{morado}{$\log_{\alpha} 31$ en $\mathbb{Z}_{59}$}}.}
 
