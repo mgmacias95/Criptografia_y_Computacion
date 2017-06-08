@@ -1,0 +1,372 @@
+\documentclass[10pt,spanish]{article}
+
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath, amsthm}
+\usepackage{amsfonts, amssymb, latexsym}
+\usepackage{enumerate}
+\usepackage[usenames, dvipsnames]{color}
+\usepackage{colortbl}
+\usepackage{minted}
+\usepackage[left=3cm, right=3cm]{geometry}
+\usepackage{cancel}
+\usepackage{graphicx}
+\usepackage{subfigure}
+
+\usepackage[bookmarks=true,
+            bookmarksnumbered=false, % true means bookmarks in
+                                     % left window are numbered
+            bookmarksopen=false,     % true means only level 1
+                                     % are displayed.
+            colorlinks=true,
+            linkcolor=webblue]{hyperref}
+\definecolor{webgreen}{rgb}{0, 0.5, 0} % less intense green
+\definecolor{webblue}{rgb}{0, 0, 0.5}  % less intense blue
+\definecolor{webred}{rgb}{0.5, 0, 0}   % less intense red
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1ex plus 0.5ex minus 0.2ex}
+
+%%%%% Para cambiar el tipo de letra en el título de la sección %%%%%%%%%%%
+\usepackage{sectsty}
+\sectionfont{\fontfamily{pag}\selectfont}
+\subsectionfont{\fontfamily{pag}\selectfont}
+\subsubsectionfont{\fontfamily{pag}\selectfont}
+
+\definecolor{morado}{rgb}{0.6, 0.4, 0.8}
+
+% \usepackage[default]{frcursive}
+% \usepackage[T1]{fontenc}
+
+%Definimos autor y título
+\title{\fontfamily{pag}\selectfont \bfseries \Huge \color{morado} Examen Julio 2016}
+\author{\fontfamily{pag}\selectfont \bfseries \LARGE Marta Gómez y Braulio Vargas}
+
+\begin{document}
+\maketitle
+
+\renewcommand{\tablename}{Tabla}
+
+\begin{description}
+    \item[Ejercicio 1] \textit{Factoriza, usando el \textbf{\textcolor{morado}{$\rho$ de Pollard}} el entero 299.}
+
+    \begin{center}
+    \begin{tabular}{c | c | c | c | c | c}
+    $i$ & $a$ & $x$ & $y$ & $y-x$ & $mcd (y-x,n)$ \\
+    \hline
+    & $243$ & & & & \\
+    $1$ & & $260$ & $147$ & $-113$ & $1$ \\
+    $2$ & & $89$ & $80$ & $-9$ & $1$ \\
+    $3$ & & $87$ & $292$ & $205$ & $1$ \\
+    $4$ & & $77$ & $205$ & $128$ & $1$ \\
+    $5$ & & $261$ & $183$ & $-78$ & \textbf{\textcolor{morado}{13}}
+    \end{tabular}
+    \end{center}
+
+    \begin{displaymath}
+        \frac{299}{13} = \mathbf{\textcolor{morado}{23}} \qquad\ 299 = 13 \cdot 23
+    \end{displaymath}
+
+    \item[Ejercicio 2] \textit{Encuentra un \textbf{\textcolor{morado}{cuerpo finito con 16 elementos}}. Calcula $1010 \times 0100$.}
+
+    Para construir un cuerpo con $16 = 2^4$ elementos, necesitamos constuir $\mathbb{F}_{16}$ y para ello, necesitamos un polinomio de grado $n = 4$ que sea primitivo: $x^4 + x + 1$. Por tanto, vamos a trabajar en el cuerpo $\mathbb{Z}_{2_{x^4 + x + 1}}$. Podemos representar cada elemento del conjunto como una cadena de 4 bits.
+
+    Para realizar la suma, basta con hacer la operación $\oplus$ bit a bit. En cambio, para la multiplicación, hay que realizar el producto en notación polinomial y posteriormente dividir por $x^4 + x + 1$.
+
+    Para multiplicar $x^3 + x$ y $x^2$ operamos como sigue:
+
+    \begin{displaymath}
+        \frac{
+            \begin{array}[b]{r}
+            1\; 0\; 1\; 0 \\
+            \times 0\; 1\; 0\; 0
+            \end{array}
+        }{\frac{
+            \begin{array}[b]{r}
+                0\; 0\; 0\; 0 \;\;\;\;\;\;\;\\
+                0\; 0\; 0\; 0\; \;\;\;\;\;\;\;\;\;\\
+                1\; 0\; 1\; 0\; \;\;\;\;\;\;\;\;\;\;\;\;\\
+                0\; 0\; 0\; 0\; \;\;\;\;\;\;\;\;\;\;\;\;\;\;\;
+            \end{array}
+        }{
+        \begin{array}[b]{r}
+        0\; 1\; 0\; 1\; 0\; 0\; 0\; \;\;\;\;\;\;\;
+        \end{array}
+        }}
+    \end{displaymath}
+
+    Por tanto, $x^3 + x \times x^2 = x^5 + x^3$, pero al ser el grado del polinomio mayor a $n$, debemos reducirlo diviendo por $x^4 + x + 1$.
+
+    \begin{displaymath}
+        \frac{
+            \begin{array}[b]{r}
+                1\; 0\; 1\; 0\; 0\; 0\;\\
+                1\; 0\; 0\; 1\; 1\; 0\;
+            \end{array}
+        }{
+            \begin{array}[b]{r}
+                0\; 0\; 1\; 1\; 1\; 0
+            \end{array}
+        }
+    \end{displaymath}
+
+    Por tanto, la solución final es \textcolor{morado}{$\mathbf{x^3 + x^2 + x}$}.
+
+    % Para definir un cuerpo, debemos definir la multiplicación y la suma entre sus elementos. En nuestro caso, para obtener un cuerpo finito con 16 elementos, tomamos un conjunto con cuatro elementos, $\{0,1,a,b\}$, y definimos:
+
+    % \begin{minipage}{0.5\textwidth}
+    %     \begin{tabular}{| >{\columncolor{morado}} c | c | c | c | c |}
+    %     \hline
+    %     \rowcolor{morado} \textcolor{white}{$+$} & \textcolor{white}{0} & \textcolor{white}{1} & \textcolor{white}{$a$} & \textcolor{white}{$b$} \\
+    %     \hline
+    %     \textcolor{white}{0} & 0 & 1 & $a$ & $b$ \\
+    %     \hline
+    %     \textcolor{white}{1} & 1 & 0 & $b$ & $a$ \\
+    %     \hline
+    %     \textcolor{white}{$a$} & $a$ & $b$ & 0 & 1 \\
+    %     \hline
+    %     \textcolor{white}{$b$} & $b$ & $a$ & 1 & 0 \\
+    %     \hline 
+    %     \end{tabular}
+    % \end{minipage}
+    % \begin{minipage}{0.5\textwidth}
+    %     \begin{tabular}{| >{\columncolor{morado}} c | c | c | c | c |}
+    %     \hline
+    %     \rowcolor{morado} \textcolor{white}{$\times$} & \textcolor{white}{0} & \textcolor{white}{1} & \textcolor{white}{$a$} & \textcolor{white}{$b$} \\
+    %     \hline
+    %     \textcolor{white}{0} & 0 & 0 & 0 & 0 \\
+    %     \hline 
+    %     \textcolor{white}{1} & 0 & 1 & $a$ & $b$ \\
+    %     \hline 
+    %     \textcolor{white}{$a$} & 0 & $a$ & $b$ & 1 \\
+    %     \hline 
+    %     \textcolor{white}{$b$} & 0 & $b$ & 1 & $a$ \\
+    %     \hline
+    %     \end{tabular}
+    % \end{minipage}
+
+    % Una vez tenemos definidas tanto la suma como la multiplicación, podemos pasar a calcular $1010 \times 0100$, o lo que es lo mismo $aa \times 10$
+
+    % \begin{displaymath}
+    %     \frac{
+    %         \begin{array}[b]{r}
+    %             a a \\
+    %      \times 1 0 
+    %         \end{array}
+    %     }{
+    %         ~~ a 0
+    %     }
+    % \end{displaymath}
+
+
+
+    \item[Ejercicio 3] \textit{Sea $\alpha$ un \textbf{\textcolor{morado}{elemento primitivo}} de $\mathbb{Z}_{59}^*$. Encuentra \textbf{\textcolor{morado}{$\log_{\alpha} 31$ en $\mathbb{Z}_{59}$}}.}
+
+    En primer lugar, buscamos un elemento primitivo.
+
+    \begin{center}
+    \begin{tabular}{c | c | c}
+    $i$ & $i^{\frac{n-1}{2}} \pmod n$ \\
+    \hline
+    $2$ & $58$  
+    \end{tabular}
+    \end{center}
+
+    Por tanto, $\alpha = 2$.
+
+    Ahora pasamos a calcular $\log_2 31 \pmod{59}$. Como $7 < \sqrt{59} < 8$, establecemos $s = 8$ y pasamos a calcular el paso enano.
+
+    \begin{center}
+    \begin{tabular}{c | c | c | c | c | c | c | c}
+    0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 \\
+    \hline 
+    31 & 3 & 6 & 12 & 24 & 48 & 37 & 15
+    \end{tabular}
+    \end{center}
+
+    Y ahora pasamos a calcular el paso gigante, hasta encontar un elemento que coincida:
+
+    \begin{center}
+    \begin{tabular}{c | c | c | c | c | c | c | c}
+    1 & 2 & 3 & 4 & 5 & 6 & 7 \\
+    \hline 
+    20 & 46 & 35 & 51 & 17 & 45 & 15 
+    \end{tabular}
+    \end{center}
+
+    Paramos en $i=7$ porque ya hemos encontrado un elemento que se encuentre en el paso enano, $15$. Para calcular el logaritmo hacemos:
+
+    \begin{displaymath}
+        i \cdot s - posicion(paso\_enano, 15) = \mathbf{\textcolor{morado}{49}}
+    \end{displaymath}
+
+    \item[Ejercicio 4] \textit{Encuentra las \textcolor{morado}{\textbf{raíces cuadradas}} de $5$ en $\mathbb{Z}_{209}$. Haz lo mismo con $55$.}
+
+    En primer lugar, factorizamos $n = 209$ en $p = 11$ y $q = 19$.
+
+    Empezamos comprobando si $5$ tiene raíces en $p$ y en $q$.
+
+    \begin{displaymath}
+        \left(\frac{5}{19} \right) = (-1)^\frac{18 \cdot 4}{4} = 1 \qquad\ \left(\frac{5}{11} \right) = (-1)^\frac{10 \cdot 4}{4} = 1
+    \end{displaymath}
+
+    5 tiene raíces cuadradas tanto módulo $p$ como $q$. Necesitamos expresar $p-1$ y $q-1$ como $2^u \cdot s$  y encontrar un $n$ tal que $\left(\frac{n}{p} \right) = -1$ y $\left(\frac{n}{q} \right) = -1$.
+
+    \begin{displaymath}
+        18 = 2^1 \cdot 9 \; (u=1, \; s=9) \qquad\ 10 = 2^1 \cdot 5 \; (u=1, \; s=5)
+    \end{displaymath}
+
+    \begin{displaymath}
+        \left(\frac{2}{19}\right) = -1 \qquad \left(\frac{2}{11}\right) = -1
+    \end{displaymath}
+
+    En ambos casos, $n = 2$. Como hemos obtenido $u = 1$ en ambos casos, una de las raíces será $r = a^{\frac{p+1}{4}}$ y la otra raíz será restar $p - r$ y $q - r$.
+
+    \begin{displaymath}
+        r = 5^5 \pmod p = 9 \qquad\ r = 5^3 \pmod q = 4
+    \end{displaymath}
+    \begin{displaymath}
+        r' = 19 - 9 = 10 \qquad r' = 11 - 4 = 7
+    \end{displaymath}
+
+    Por tanto, ya tenemos las raíces cuadradas de 5, que son:
+
+    \begin{displaymath}
+    \begin{matrix}
+        \sqrt{5} \in \mathbb{Z}_p & = & \{9,10\} \\
+        \sqrt{5} \in \mathbb{Z}_q & = & \{4,7\}
+    \end{matrix}
+    \end{displaymath}
+
+    Ahora pasamos a resolver el siguiente sistema de congruencias que resolvemos usando el Teorema Chino de los Restos:
+
+    \begin{displaymath}
+    \Bigg\{ \begin{matrix}
+    r_1 & \equiv & 4 \bmod 11 \\
+    r_1 & \equiv & 9 \bmod 19 
+    \end{matrix}
+    \qquad\
+    \Bigg\{ 
+    \begin{matrix}
+    r_3 & \equiv & 7 \bmod 11 \\
+    r_3 & \equiv & 9 \bmod 19
+    \end{matrix}
+    \end{displaymath}
+
+    \begin{displaymath}
+        r_1 = 4 + 11 \cdot l \qquad\ r_3 = 7 + 11 \cdot l
+    \end{displaymath}
+    \begin{displaymath}
+        4 + 11 \cdot l \equiv 9 \bmod 19 \qquad\ 7 + 11 \cdot l \equiv 9 \bmod 19
+    \end{displaymath}
+
+    \begin{minipage}{0.5\textwidth}
+    \begin{displaymath}
+    \begin{matrix}
+    11 \cdot l & \equiv & (9 - 4) \bmod 19 \\
+    l & \equiv & (9 - 4) \cdot 11^{-1} \bmod 19\\
+    l & \equiv & 5 \cdot 7 \bmod 19\\
+    l & \equiv & 16 \bmod 19\\
+    l & = & 16 + 19 \cdot s \\
+    \end{matrix}     
+    \end{displaymath}
+    \end{minipage}
+    \begin{minipage}{0.5\textwidth}
+    \begin{displaymath}
+    \begin{matrix}
+    11 \cdot l & \equiv & (9 - 7) \bmod 19 \\
+    l & \equiv & (9 - 7) \cdot 11^{-1} \bmod 19\\
+    l & \equiv & 2 \cdot 7 \bmod 19\\
+    l & \equiv & 14 \bmod 19\\
+    l & = & 14 + 19 \cdot s
+    \end{matrix}     
+    \end{displaymath}
+    \end{minipage}
+
+    A partir de aquí, las operaciones son en $\mathbb{Z}_{209}$: 
+
+    \begin{displaymath}
+        r_1 = 4 + 11 \cdot (16 + 19 \cdot s) \qquad\ r_3 = 7 + 11 \cdot (14 + 19 \cdot s)
+    \end{displaymath}
+    \begin{displaymath}
+        r_1 = 4 + (16 \cdot 11 + 19  \cdot 11 \cdot s) \qquad\ r_3 = 7 + (14 \cdot 11 + 19 \cdot 11 \cdot s)
+    \end{displaymath}
+    \begin{displaymath}
+        r_1 = 4 + (176 + 0s) \qquad\ r_3 = 7 + (154 + 0s)
+    \end{displaymath}
+    \begin{displaymath}
+        r_1 = 4 + 176 \qquad\ r_3 = 7 + 154
+    \end{displaymath}
+    \begin{displaymath}
+        r_1 = \mathbf{\textcolor{morado}{180}} \qquad\ r_3 = \mathbf{\textcolor{morado}{161}}
+    \end{displaymath}
+
+
+    Y las dos otras raíces serán los complementarios a estas calculadas.
+
+    \begin{displaymath}
+        r_2 = 209 - 180 =  \textcolor{morado}{\mathbf{29}} \qquad\ r_4 = 209 - 161 = \mathbf{\textcolor{morado}{48}}
+    \end{displaymath}
+
+    En el caso de 55, debemos repetir la misma operación. En primer lugar, comprobamos si tiene raíces.
+
+    \begin{displaymath}
+        \left(\frac{55}{19} \right) = \left(\frac{55 \bmod 19}{19} \right) = \left(\frac{17}{19} \right) = (-1)^\frac{18 \cdot 16}{4} = 1 \qquad\ \left(\frac{55}{11} \right) = \left(\frac{55 \bmod 11}{11} \right) = \left(\frac{0}{11} \right) = 0
+    \end{displaymath}
+
+    55 no tiene raíces cuadradas módulo 11 y, por tanto, tampoco las tiene módulo 209.
+
+    \item[Ejercicio 5] \textit{Sea $f: \mathbb{Z}_{19} \times \mathbb{Z}_8 \rightarrow \mathbb{Z}_{19}$ definida como $f(x,y) = 2^{xy}$. Utiliza la \textbf{\textcolor{morado}{construcción de Merkle-Damgård}} para construir a partir de $f$ una función resumen. Calcula la función resumen del mensaje (ya separado en bloques) $[2,1,0,3]$. Toma como vector inicial $7$ (valor inicial para $x$).}
+
+    \begin{center}
+        \begin{tabular}{c | c | c}
+        $x$ & $y$ & $2^{xy} \bmod 19$ \\
+        \hline
+        7 & 2 & 6 \\
+        6 & 1 & 7 \\
+        7 & 0 & 1 \\
+        3 & 1 & \textcolor{morado}{\textbf{8}}
+        \end{tabular}
+    \end{center}
+
+    \item[Ejercicio 6] \textit{Escoge dos primos de dos dígitos. Construye una \textbf{\textcolor{morado}{llave pública y privada para RSA}} con esos dos primos. Si alguien te manda el valor 5 como mensaje cifrado con tu llave pública, ¿cuál es el \textbf{\textcolor{morado}{mensaje original}}?}
+
+    Tomamos dos primos aleatorios en el intervalo $[10,99]$, por ejemplo $p = 79$ y $q = 23$. Calculamos $n = p\cdot q = 1817$ y también calculamos $\phi (n) = (p-1) \cdot (q-1) = 1716$. Una vez tenemos estos datos calculados, pasamos a calcular $e = 5$, primo relativo de $\phi (n)$, es decir $mcd (e, \phi(n)) = 1$. Por último, calculamos $d = e^{-1} \bmod \phi(n) = 1373$.
+
+    Una vez tenemos nuestra clave pública $(n,e)$ y nuestra clave privada $d$, pasamos a descifrar el mensaje $c = 5$:
+
+    \begin{displaymath}
+        m = c^d \pmod n = 5^{1373} \pmod{1817} = 839
+    \end{displaymath}
+
+    Se puede comprobar que este descifrado es correcto, volviéndolo a cifrar:
+
+    \begin{displaymath}
+        c = m^e \pmod n = 839^5 \pmod{1817} = 5
+    \end{displaymath}
+
+    \item[Ejercicio 7] \textit{Supongamos que Jesús y Pedro andan últimamente muy ocupados, y como la ETSIIT está muy lejos, dedicen echar a suertes por teléfono quién vigila el examen de Criptografía y Computación este año. \textbf{\textcolor{morado}{Quien gane un reto de tirar una moneda por teléfono, vigila}}.}
+
+    \textit{Pedro escoge los números $p = 742983794289739861$ y $q = 376487263921$. Y le manda a Jesús su producto $n = pq$. A continuación Jesús elige $u = 3498739487397$ y le envía $v = u^2 \bmod n$ a Pedro.}
+
+    \textit{Pedro calcula entonces las cuatro raíces de $v$ módulo $n$,}
+
+    \begin{displaymath}
+        [3498739487397, 61408798834197592530916453239, 
+    \end{displaymath}
+    \begin{displaymath}   
+        218315137015589671259824401742, 279723935849787260292001367584]
+    \end{displaymath}
+
+    \textit{y se queda con las dos que son menores que $n/2$}
+
+    \begin{displaymath}
+        [3498739487397, 61408798834197592530916453239]
+    \end{displaymath}
+
+    \textit{Finalmente Pedro escoge entonces $r = 61408798834197592530916453239$ y se lo manda a Jesús. ¿\textcolor{morado}{\textbf{Quién vigila el examen}}?}
+
+    El reto lo gana \textcolor{morado}{\textbf{Jesús}}, porque, aunque Pedro ha calculado correctamente las raíces de $v$, ha enviado un $r$ distinto del $u$ inicial que eligió Jesús.
+\end{description}
+
+\end{document}

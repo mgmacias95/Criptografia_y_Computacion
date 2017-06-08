@@ -390,6 +390,7 @@ jacobi a n
 jacobi_impar :: (Integral a) => a -> a -> a
 jacobi_impar a n
     | a > n         = jacobi_impar (a `mod` n) n
+    | a == 0        = 0
     | a == 1        = 1
     | a == -1       = (-1)^((n - 1) `div` 2)
     | a == 2        = (-1)^((n^2 - 1) `div` 8)

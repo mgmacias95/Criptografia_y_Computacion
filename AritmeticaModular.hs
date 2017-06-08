@@ -173,6 +173,7 @@ module AritmeticaModular (extended_euclides, inverse, exponential_zn, descomposi
     jacobi_impar :: (Integral a) => a -> a -> a
     jacobi_impar a n
         | a > n         = jacobi_impar (a `mod` n) n
+        | a == 0        = 0
         | a == 1        = 1
         | a == -1       = (-1)^((n - 1) `div` 2)
         | a == 2        = (-1)^((n^2 - 1) `div` 8)
@@ -189,7 +190,7 @@ module AritmeticaModular (extended_euclides, inverse, exponential_zn, descomposi
     cuadrados a p
         | not $ miller_rabin p = error "p debe ser primo"
         | jacobi a p /= 1      = error "(a/p) /= 1"
-        | otherwise            = (raiz1, raiz2)
+        | otherwise            = (raiz1 `mod` p, raiz2 `mod` p)
                 where
                     n     = (fromIntegral $ fromJust $ elemIndex (-1) $ 
                             map (\x -> jacobi x p) [2..p-1]) + 2
