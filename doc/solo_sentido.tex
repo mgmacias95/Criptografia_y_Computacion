@@ -285,25 +285,26 @@ f: \mathbb{Z}_p \rightarrow \mathbb{Z}_p, \qquad\ x \rightarrow \alpha^x
 donde $x$ es una fecha de nacimiento en formato $AAAAMMDD$. El inverso de $f$ se corresponde con el \textit{\textcolor{azul}{Baby Step Giant Step}} que ya fue implementado en la práctica 1.
 
 \begin{minted}[frame=single, label={Calculando el inverso de una fecha de nacimiento}]{haskell}
-find_next_prime :: (Integral a, Random a) => a -> a
-find_next_prime p = head $ dropWhile (\x -> not (miller_rabin x)) [p..p*2]
+    find_next_prime :: (Integral a, Random a) => a -> a
+    find_next_prime p = head $ dropWhile (\x -> (not $ miller_rabin x) || 
+                        (not $ miller_rabin ((x-1) `div` 2))) [p..p*2]
 
 inverso_nacimiento :: (Integral a, Random a) => a -> a -> a
 inverso_nacimiento id birthday = baby_s_giant_s a birthday p
     where
-        p = find_next_prime p
+        p = find_next_prime id
         a = find_primitive_root p
 \end{minted}
 
-En mi caso, mi DNI es 75929776 y mi fecha de nacimiento, 19950207. El inverso de mi fecha de nacimiento es 67186975. Para comprobar que está bien, elevo $\alpha$ a dicho inverso, para obtener mi fecha de nacimiento.
+En mi caso, mi DNI es 75929776 y mi fecha de nacimiento, 19950207. El inverso de mi fecha de nacimiento es 37857359. Para comprobar que está bien, elevo $\alpha$ a dicho inverso, para obtener mi fecha de nacimiento.
 
 \begin{minted}[frame=single, label={Inverso de mi fecha de nacimiento}]{haskell}
 *Main> let id = 75929776
 *Main> let birthday = 19950207
 *Main> let i = inverso_nacimiento id birthday
 *Main> i
-67186975
-*Main> let p = head $ dropWhile (\x -> not (miller_rabin x)) [id..id*2]
+37857359
+*Main> let p = find_next_prime id
 *Main> let a = find_primitive_root p
 *Main> exponential_zn a i p
 19950207

@@ -107,12 +107,13 @@ module SoloSentido (mochi_gen_claves, mochi_cifrado, mochi_descifrado,
             primos = filter (miller_rabin) [2..p-2]
 
     find_next_prime :: (Integral a, Random a) => a -> a
-    find_next_prime p = head $ dropWhile (\x -> not (miller_rabin x)) [p..p*2]
+    find_next_prime p = head $ dropWhile (\x -> (not $ miller_rabin x) || 
+                        (not $ miller_rabin ((x-1) `div` 2))) [p..p*2]
 
     inverso_nacimiento :: (Integral a, Random a) => a -> a -> a
     inverso_nacimiento id birthday = baby_s_giant_s a birthday p
         where
-            p = find_next_prime p
+            p = find_next_prime id
             a = find_primitive_root p
 
     {-
