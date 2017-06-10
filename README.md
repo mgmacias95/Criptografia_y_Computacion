@@ -22,3 +22,13 @@ Implementación de:
 * __Generador de Geffe__ e implementación de un __cifrado en flujo__. Esto incluye pasar un mensaje _String_ a binario.
 * __Algoritmo de Berlekamp-Massey__.
 
+## Práctica 3 - Funciones de un sólo sentido
+Implementación de:
+
+* __Criptosistema basado en el problema de la mochila__ (_knapsack_).
+* __Cálculo de elementos primitivos__.
+* __Cálculo de p y q dados n y f(x)__.
+* __Construcción de Merkle-Damgård para implementar una función resumen__.
+* __Cálculo de una llave privada RSA dada la llave pública__.
+* __Método alternativo para encontrar p y q__.
+* __Sistema de firma digital DSS y RSA.__
