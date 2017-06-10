@@ -11,4 +11,14 @@ Implementación de las siguientes operaciones matemáticas:
 * __Logaritmo__ usando el algoritmo _Paso enano, Paso gigante_ ![](http://mathurl.com/y736o8pm.png)
 * __Cálculo de raíces cuadradas__ ![](http://mathurl.com/ybs8rnka.png) usando el _símbolo de Jacobi_ y el _Teorema Chino de los Restos_.
 * __Factorización de un número__ usando el _Método de Fermat_ y el _Algoritmo ![](http://mathurl.com/yd2uj4t.png) de Pollard_.
-* Comparación de la implementación hecha con SAGEmath.
+* Comparación de la implementación hecha con funciones de SAGEmath.
+
+## Práctica 2 - Secuencias Pseudo-Aleatorias
+Implementación de:
+
+* __Postulados de Golomb__.
+* __LFSR__ y análisis del período de la secuencia obtenida según la semilla utilizada.
+* __NLFSR__.
+* __Generador de Geffe__ e implementación de un __cifrado en flujo__. Esto incluye pasar un mensaje _String_ a binario.
+* __Algoritmo de Berlekamp-Massey__.
+
